@@ -1108,7 +1108,7 @@ function exportPDF(targets,secs){
     if(secs.asistencia&&m.asistencia&&Object.keys(m.asistencia).length){body+=st('Historial de asistencia');body+=`<table style="width:100%;border-collapse:collapse;"><tr style="background:#111;"><th style="padding:4px 6px;text-align:left;color:#d4a017;font-size:9px;border:.5px solid #333;">Mes</th><th style="padding:4px 6px;text-align:left;color:#d4a017;font-size:9px;border:.5px solid #333;">Reunión</th><th style="padding:4px 6px;text-align:left;color:#d4a017;font-size:9px;border:.5px solid #333;">Servicio</th></tr>`;Object.entries(m.asistencia).sort((a,b)=>b[0].localeCompare(a[0])).forEach(([k,v])=>{const[y,mo]=k.split('-');body+=`<tr><td style="padding:4px 6px;border:.5px solid #ddd;font-size:11px;">${MESES_FULL[parseInt(mo)]} ${y}</td><td style="padding:4px 6px;border:.5px solid #ddd;font-size:11px;">${v.reunion===true?'✓ Presente':v.reunion===false?'✗ Ausente':'—'}</td><td style="padding:4px 6px;border:.5px solid #ddd;font-size:11px;">${v.servicio===true?'✓ Presente':v.servicio===false?'✗ Ausente':'—'}</td></tr>`;});body+=`</table>`;}
     body+=`<div style="font-size:9px;color:#aaa;text-align:center;margin-top:24px;padding-top:8px;border-top:.5px solid #ddd;">Brigada Fénix · Unidad Operativa de Brigada Halcón · Documento confidencial</div></div>`;
   });
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Brigada Fénix</title><style>body{font-family:Arial,sans-serif;font-size:12px;margin:0;background:#fff;}@media print{button{display:none!important;}}</style><scr'+'ipt src=\"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2\"><\/script>
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Brigada Fénix</title><style>body{font-family:Arial,sans-serif;font-size:12px;margin:0;background:#fff;}@media print{button{display:none!important;}}</style>
 </head><body>`);
   w.document.write(`<div style="background:#111;color:#fff;padding:12px 32px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #b91c1c;"><div><div style="font-size:16px;font-weight:800;letter-spacing:2px;">BRIGADA FÉNIX</div><div style="font-size:9px;color:#d4a017;letter-spacing:1px;">UNIDAD OPERATIVA DE BRIGADA HALCÓN</div></div><div style="font-size:10px;color:#666;">Generado: ${new Date().toLocaleDateString('es-DO')}</div></div>`);
   w.document.write(body);w.document.close();setTimeout(()=>w.print(),700);
@@ -1245,139 +1245,116 @@ updateNotifDot();
 </script>
 
 <script>
-// ══ SUPABASE SYNC (non-breaking layer) ══
-try {
-  var _SB = supabase.createClient(
-    'https://iacgklyzlzkaoflwqegg.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhY2drbHl6bHprYW9mbHdxZWdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MjQ3MjQsImV4cCI6MjA5ODAwMDcyNH0.6V_I0fzN7OC_Z9_fnfbKUNewYa5YJ9zNjA6RsuvR2Jk'
-  );
+// ══ SUPABASE SYNC ══
+(function() {
+  try {
+    var SB = supabase.createClient(
+      'https://iacgklyzlzkaoflwqegg.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhY2drbHl6bHprYW9mbHdxZWdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MjQ3MjQsImV4cCI6MjA5ODAwMDcyNH0.6V_I0fzN7OC_Z9_fnfbKUNewYa5YJ9zNjA6RsuvR2Jk'
+    );
 
-  // Load from Supabase on admin login
-  var _orig_loginAdmin = loginAdmin;
-  function loginAdmin() {
-    _orig_loginAdmin();
-    // If login succeeded, load from Supabase
-    if (document.getElementById('screen-admin').classList.contains('active')) {
-      _sbLoad();
+    async function sbLoad() {
+      try {
+        var r = await SB.from('integrantes').select('*').order('id');
+        if (r.data && r.data.length > 0) {
+          members = r.data.map(function(m) {
+            return {
+              id:m.id, nombre:m.nombre||'', apodo:m.apodo||'',
+              cedula:m.cedula||'', nacimiento:m.nacimiento||'',
+              sangre:m.sangre||'', ocupacion:m.ocupacion||'',
+              tel1:m.tel1||'', tel2:m.tel2||'', dir:m.dir||'',
+              alergias:m.alergias||'', padecimientos:m.padecimientos||'',
+              medicamentos:m.medicamentos||'',
+              rango:m.rango||'Aspirante', estado:m.estado||'Aspirante',
+              ingreso:m.ingreso||'', numbrigada:m.numbrigada||'',
+              razon:m.razon||'', habilidades:m.habilidades||'',
+              cursos:m.cursos?m.cursos.split(',').filter(function(c){return c.trim();}):[], 
+              emname:m.emname||'', emrel:m.emrel||'', emtel:m.emtel||'',
+              notas:m.notas||'', foto:m.foto||'', asistencia:m.asistencia||{}
+            };
+          });
+          saveLS('bf_members', members);
+          var c = document.getElementById('admin-content');
+          if (c && typeof renderDashboard === 'function') renderDashboard(c);
+        }
+        var r2 = await SB.from('avisos').select('*').order('created_at',{ascending:false});
+        if (r2.data && r2.data.length > 0) {
+          notifs = r2.data.map(function(n) {
+            return {id:n.id, titulo:n.titulo||'', msg:n.mensaje||'',
+              tipo:n.tipo||'info', leido:false,
+              fecha:new Date(n.created_at).toLocaleDateString('es-DO')};
+          });
+          saveLS('bf_notifs', notifs);
+          if (typeof updateNotifDot === 'function') updateNotifDot();
+        }
+      } catch(e) { console.log('SB load:', e); }
     }
-  }
 
-  async function _sbLoad() {
-    try {
-      var r = await _SB.from('integrantes').select('*').order('id');
-      if (r.data && r.data.length > 0) {
-        members = r.data.map(function(m) {
-          return {
-            id: m.id, nombre: m.nombre||'', apodo: m.apodo||'',
-            cedula: m.cedula||'', nacimiento: m.nacimiento||'',
-            sangre: m.sangre||'', ocupacion: m.ocupacion||'',
-            tel1: m.tel1||'', tel2: m.tel2||'', dir: m.dir||'',
-            alergias: m.alergias||'', padecimientos: m.padecimientos||'',
-            medicamentos: m.medicamentos||'',
-            rango: m.rango||'Aspirante', estado: m.estado||'Aspirante',
-            ingreso: m.ingreso||'', numbrigada: m.numbrigada||'',
-            razon: m.razon||'', habilidades: m.habilidades||'',
-            cursos: m.cursos ? m.cursos.split(',').filter(function(c){return c.trim();}) : [],
-            emname: m.emname||'', emrel: m.emrel||'', emtel: m.emtel||'',
-            notas: m.notas||'', foto: m.foto||'', asistencia: m.asistencia||{}
-          };
-        });
-        saveLS('bf_members', members);
-        var c = document.getElementById('admin-content');
-        if (c && typeof renderDashboard === 'function') renderDashboard(c);
-      }
-      var r2 = await _SB.from('avisos').select('*').order('created_at', {ascending: false});
-      if (r2.data && r2.data.length > 0) {
-        notifs = r2.data.map(function(n) {
-          return {
-            id: n.id, titulo: n.titulo||'', msg: n.mensaje||'',
-            tipo: n.tipo||'info', leido: false,
-            fecha: new Date(n.created_at).toLocaleDateString('es-DO')
-          };
-        });
-        saveLS('bf_notifs', notifs);
-        updateNotifDot();
-      }
-    } catch(e) { console.log('SB load error:', e); }
-  }
+    async function sbSave(data, isNew) {
+      try {
+        var d = {
+          nombre:data.nombre, apodo:data.apodo||'', cedula:data.cedula,
+          nacimiento:data.nacimiento||null, sangre:data.sangre||'',
+          ocupacion:data.ocupacion||'', tel1:data.tel1||'', tel2:data.tel2||'',
+          dir:data.dir||'', alergias:data.alergias||'',
+          padecimientos:data.padecimientos||'', medicamentos:data.medicamentos||'',
+          rango:data.rango, estado:data.estado, ingreso:data.ingreso||null,
+          numbrigada:data.numbrigada||'', razon:data.razon||'',
+          habilidades:data.habilidades||'',
+          cursos:Array.isArray(data.cursos)?data.cursos.join(','):data.cursos||'',
+          emname:data.emname||'', emrel:data.emrel||'', emtel:data.emtel||'',
+          notas:data.notas||'', foto:data.foto||'', asistencia:data.asistencia||{}
+        };
+        if (isNew) { await SB.from('integrantes').insert([d]); }
+        else { await SB.from('integrantes').update(d).eq('id',data.id); }
+      } catch(e) { console.log('SB save:', e); }
+    }
 
-  async function _sbSave(data, isNew) {
-    try {
-      var d = {
-        nombre:data.nombre, apodo:data.apodo||'', cedula:data.cedula,
-        nacimiento:data.nacimiento||null, sangre:data.sangre||'',
-        ocupacion:data.ocupacion||'', tel1:data.tel1||'', tel2:data.tel2||'',
-        dir:data.dir||'', alergias:data.alergias||'',
-        padecimientos:data.padecimientos||'', medicamentos:data.medicamentos||'',
-        rango:data.rango, estado:data.estado, ingreso:data.ingreso||null,
-        numbrigada:data.numbrigada||'', razon:data.razon||'',
-        habilidades:data.habilidades||'',
-        cursos: Array.isArray(data.cursos) ? data.cursos.join(',') : data.cursos||'',
-        emname:data.emname||'', emrel:data.emrel||'', emtel:data.emtel||'',
-        notas:data.notas||'', foto:data.foto||'', asistencia:data.asistencia||{}
+    // Patch using addEventListener on the login button
+    document.addEventListener('DOMContentLoaded', function() {
+      // Patch login button to load from Supabase after login
+      var loginBtn = document.querySelector('[onclick*="loginAdmin"]');
+      if (loginBtn) {
+        loginBtn.addEventListener('click', function() {
+          setTimeout(function() {
+            var adminScreen = document.getElementById('screen-admin');
+            if (adminScreen && adminScreen.classList.contains('active')) {
+              sbLoad();
+            }
+          }, 200);
+        });
+      }
+
+      // Patch save/delete using MutationObserver on admin-content
+      // When admin-content changes, check if we need to sync
+      var lastSaveTime = 0;
+      var origSaveLS = saveLS;
+      window.saveLS = function(key, val) {
+        origSaveLS(key, val);
+        if (key === 'bf_members') {
+          // Sync changed member to Supabase
+          var now = Date.now();
+          if (now - lastSaveTime > 500) {
+            lastSaveTime = now;
+            setTimeout(function() {
+              var m = editId ? members.find(function(x){return x.id===editId;}) 
+                             : members[members.length-1];
+              if (m) sbSave(m, !editId);
+            }, 300);
+          }
+        }
+        if (key === 'bf_notifs' && notifs.length > 0) {
+          var n = notifs[0];
+          if (n && n.id && n.id > 1000000) { // New notif (Date.now() id)
+            SB.from('avisos').insert([{titulo:n.titulo,mensaje:n.msg,tipo:n.tipo}])
+              .then(function(){}).catch(function(){});
+          }
+        }
       };
-      if (isNew) { await _SB.from('integrantes').insert([d]); }
-      else { await _SB.from('integrantes').update(d).eq('id', data.id); }
-    } catch(e) { console.log('SB save error:', e); }
-  }
+    });
 
-  // Override saveMember
-  var _orig_saveMember = saveMember;
-  function saveMember() {
-    _orig_saveMember();
-    setTimeout(function() {
-      var m = editId ? members.find(function(x){return x.id===editId;}) : members[members.length-1];
-      if (m) _sbSave(m, !editId);
-    }, 200);
-  }
-
-  // Override deleteMember
-  var _orig_deleteMember = deleteMember;
-  function deleteMember(id) {
-    _orig_deleteMember(id);
-    _SB.from('integrantes').delete().eq('id', id).then(function(){});
-  }
-
-  // Override toggleStatus
-  var _orig_toggleStatus = toggleStatus;
-  function toggleStatus(id) {
-    _orig_toggleStatus(id);
-    setTimeout(function() {
-      var m = members.find(function(x){return x.id===id;});
-      if (m) _sbSave(m, false);
-    }, 300);
-  }
-
-  // Override markAttendance
-  var _orig_markAttendance = markAttendance;
-  function markAttendance(id, tipo, valor) {
-    _orig_markAttendance(id, tipo, valor);
-    setTimeout(function() {
-      var m = members.find(function(x){return x.id===id;});
-      if (m) _sbSave(m, false);
-    }, 300);
-  }
-
-  // Override saveNotif
-  var _orig_saveNotif = saveNotif;
-  function saveNotif() {
-    _orig_saveNotif();
-    setTimeout(function() {
-      if (notifs.length > 0) {
-        var n = notifs[0];
-        _SB.from('avisos').insert([{titulo:n.titulo, mensaje:n.msg, tipo:n.tipo}]).then(function(){});
-      }
-    }, 200);
-  }
-
-  // Override deleteNotif
-  var _orig_deleteNotif = deleteNotif;
-  function deleteNotif(id) {
-    _orig_deleteNotif(id);
-    _SB.from('avisos').delete().eq('id', id).then(function(){});
-  }
-
-} catch(e) { console.log('Supabase layer error:', e); }
+  } catch(e) { console.log('SB init error:', e); }
+})();
 </script>
 
 </body>
