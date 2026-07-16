@@ -635,7 +635,7 @@ function renderDashboard(c){
   const aspirantes=members.filter(m=>m.estado==='Aspirante').length, inactivos=members.filter(m=>m.estado==='Inactivo').length;
   const today=new Date();
   const cumples=members.filter(m=>m.nacimiento).map(m=>{
-    const d=new Date(m.nacimiento); let nx=new Date(today.getFullYear(),d.getMonth(),d.getDate());
+    const _p=m.nacimiento.split('-');const d=new Date(parseInt(_p[0]),parseInt(_p[1])-1,parseInt(_p[2])); let nx=new Date(today.getFullYear(),d.getMonth(),d.getDate());
     if(nx<today)nx.setFullYear(today.getFullYear()+1);
     return{...m,nx,diff:Math.ceil((nx-today)/(864e5))};
   }).sort((a,b)=>a.diff-b.diff).slice(0,3);
@@ -881,7 +881,7 @@ function renderExpediente(c, id){
 }
 
 function nivelExp(m, cursos, perf){
-  const meses = m.ingreso ? Math.floor((new Date()-new Date(m.ingreso))/(1000*60*60*24*30)) : 0;
+  const meses = m.ingreso ? Math.floor((new Date()-(m.ingreso?(()=>{const _i=m.ingreso.split('-');return new Date(parseInt(_i[0]),parseInt(_i[1])-1,parseInt(_i[2]));})():new Date()))/(1000*60*60*24*30)) : 0;
   let pts = 0;
   pts += Math.min(meses, 24) * 2;
   pts += cursos.length * 10;
