@@ -725,7 +725,9 @@ function toggleStatus(id){
   const m=members.find(i=>i.id===id);if(!m)return;
   const newStatus=m.estado==='Inactivo'?'Activo':'Inactivo';
   confirm2(m.estado==='Inactivo'?'✅':'⏸️',`${m.estado==='Inactivo'?'Activar':'Desactivar'} a ${m.nombre}`,`El integrante quedará como ${newStatus}.`,()=>{
-    m.estado=newStatus; saveLS('bf_members',members); showToast(`${m.nombre} marcado como ${newStatus}`);
+    m.estado=newStatus; saveLS('bf_members',members);
+    window._sbSave(m, false);
+    showToast(`${m.nombre} marcado como ${newStatus}`);
     if(currentView==='integrantes')renderIntegrantes(document.getElementById('admin-content'));
     else if(currentView==='expediente')renderExpediente(document.getElementById('admin-content'),id);
   });
@@ -734,6 +736,7 @@ function deleteMember(id){
   const m=members.find(i=>i.id===id);if(!m)return;
   confirm2('🗑️',`Eliminar a ${m.nombre}`,`Esta acción no se puede deshacer. El expediente se eliminará permanentemente.`,()=>{
     members=members.filter(i=>i.id!==id); saveLS('bf_members',members);
+    window._sbDelete(id);
     showToast(`${m.nombre} eliminado`);
     renderIntegrantes(document.getElementById('admin-content'));
   });
@@ -1400,6 +1403,12 @@ showScreen = function(id){
   _origShowScreen(id);
   var nav = document.getElementById('mobile-nav');
   if(nav) nav.style.display = id==='screen-admin' ? 'block' : 'none';
+};
+
+/* Eliminar integrante de Supabase */
+window._sbDelete=function(id){
+  fetch(SB_URL+'/integrantes?id=eq.'+id,{method:'DELETE',headers:SB_HDR})
+  .catch(function(e){console.log('sb delete error:',e);});
 };
 </script>
 </body>
