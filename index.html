@@ -530,7 +530,17 @@ function switchLoginTab(tab){
 }
 function loginAdmin(){
   const p = document.getElementById('admin-pass').value;
-  if(p === ADMIN_PASS){ currentMode='admin'; showScreen('screen-admin'); goTo('dashboard'); setTimeout(function(){ if(typeof window._sbLoad==='function') window._sbLoad(); },500); }
+  if(p === ADMIN_PASS){
+    currentMode='admin';
+    // Clear local data so Supabase always wins
+    localStorage.removeItem('bf_members');
+    localStorage.removeItem('bf_notifs');
+    members=[];
+    notifs=[];
+    showScreen('screen-admin');
+    goTo('dashboard');
+    setTimeout(function(){ if(typeof window._sbLoad==='function') window._sbLoad(); },800);
+  }
   else{ document.getElementById('admin-error').style.display='block'; }
 }
 function loginMember(){
