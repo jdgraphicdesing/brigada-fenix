@@ -530,12 +530,9 @@ function loginAdmin(){
   const p = document.getElementById('admin-pass').value;
   if(p === ADMIN_PASS){
     currentMode='admin';
-    localStorage.removeItem('bf_members');
-    localStorage.removeItem('bf_notifs');
-    members=[];notifs=[];
     showScreen('screen-admin');
     goTo('dashboard');
-    setTimeout(function(){window._sbLoad();},500);
+    setTimeout(function(){ window._sbLoad(); }, 600);
   }
   else{ document.getElementById('admin-error').style.display='block'; }
 }
@@ -1058,12 +1055,12 @@ function saveMember(){
   if(editId){
     const idx=members.findIndex(i=>i.id===editId);
     members[idx]={...members[idx],...data};
-    closeModal('modal-member'); saveLS('bf_members',members); showToast('Integrante actualizado');
+    closeModal('modal-member'); saveLS('bf_members',members); setTimeout(function(){ window._sbSave(editId ? members.find(function(x){return x.id===editId;}) : members[members.length-1], !editId); },100); showToast('Integrante actualizado');
     if(currentView==='expediente')renderExpediente(document.getElementById('admin-content'),editId);
     else goTo('integrantes');
   } else {
     members.push({id:Date.now(),asistencia:{},...data});
-    closeModal('modal-member'); saveLS('bf_members',members); showToast('Integrante agregado');
+    closeModal('modal-member'); saveLS('bf_members',members); setTimeout(function(){ window._sbSave(editId ? members.find(function(x){return x.id===editId;}) : members[members.length-1], !editId); },100); showToast('Integrante agregado');
     goTo('integrantes');
   }
 }
@@ -1289,49 +1286,75 @@ window.addEventListener('load',function(){startLoginAnim();});
 var _origGoTo=goTo;
 goTo=function(view){_origGoTo(view);['bg-panel','bg-integrantes','bg-cursos'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});var show=view==='integrantes'||view==='expediente'?'bg-integrantes':view==='cursos'?'bg-cursos':'bg-panel';var el=document.getElementById(show);if(el)el.style.display='block';};
 
-/* SUPABASE - usando fetch directo, sin depender del CDN */
-var SB_URL='https://iacgklyzlzkaoflwqegg.supabase.co';
+/* SUPABASE - fetch directo REST API */
+var SB_URL='https://iacgklyzlzkaoflwqegg.supabase.co/rest/v1';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhY2drbHl6bHprYW9mbHdxZWdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MjQ3MjQsImV4cCI6MjA5ODAwMDcyNH0.6V_I0fzN7OC_Z9_fnfbKUNewYa5YJ9zNjA6RsuvR2Jk';
+var SB_HDR={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'};
 
-function sbFetch(table){
-  return fetch(SB_URL+'/rest/v1/'+table+'?select=*&order=id',{
-    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'}
-  }).then(function(r){return r.json();});
-}
-
+/* Cargar todos los datos desde Supabase */
 window._sbLoad=function(){
-  sbFetch('integrantes').then(function(data){
-    if(data&&Array.isArray(data)&&data.length>0){
-      members=data.map(function(m){
-        return{id:m.id,nombre:m.nombre||'',apodo:m.apodo||'',cedula:m.cedula||'',
-        nacimiento:m.nacimiento||'',sangre:m.sangre||'',ocupacion:m.ocupacion||'',
-        tel1:m.tel1||'',tel2:m.tel2||'',dir:m.dir||'',alergias:m.alergias||'',
-        padecimientos:m.padecimientos||'',medicamentos:m.medicamentos||'',
-        rango:m.rango||'Aspirante',estado:m.estado||'Aspirante',ingreso:m.ingreso||'',
-        numbrigada:m.numbrigada||'',razon:m.razon||'',habilidades:m.habilidades||'',
-        cursos:m.cursos?m.cursos.split(',').filter(function(c){return c.trim();}):[], 
-        emname:m.emname||'',emrel:m.emrel||'',emtel:m.emtel||'',
-        notas:m.notas||'',foto:m.foto||'',asistencia:m.asistencia||{}};
-      });
-      localStorage.setItem('bf_members',JSON.stringify(members));
-      var c=document.getElementById('admin-content');
-      if(c&&typeof renderDashboard==='function')renderDashboard(c);
-    }
-  }).catch(function(e){console.log('sb members error:',e);});
+  fetch(SB_URL+'/integrantes?select=*&order=id',{headers:SB_HDR})
+  .then(function(r){return r.json();})
+  .then(function(data){
+    if(!Array.isArray(data)) return;
+    members=data.map(function(m){
+      return{id:m.id,nombre:m.nombre||'',apodo:m.apodo||'',cedula:m.cedula||'',
+      nacimiento:m.nacimiento||'',sangre:m.sangre||'',ocupacion:m.ocupacion||'',
+      tel1:m.tel1||'',tel2:m.tel2||'',dir:m.dir||'',alergias:m.alergias||'',
+      padecimientos:m.padecimientos||'',medicamentos:m.medicamentos||'',
+      rango:m.rango||'Aspirante',estado:m.estado||'Aspirante',ingreso:m.ingreso||'',
+      numbrigada:m.numbrigada||'',razon:m.razon||'',habilidades:m.habilidades||'',
+      cursos:m.cursos?m.cursos.split(',').filter(function(c){return c.trim();}):[], 
+      emname:m.emname||'',emrel:m.emrel||'',emtel:m.emtel||'',
+      notas:m.notas||'',foto:m.foto||'',asistencia:m.asistencia||{}};
+    });
+    localStorage.setItem('bf_members',JSON.stringify(members));
+    var c=document.getElementById('admin-content');
+    if(c&&typeof renderDashboard==='function')renderDashboard(c);
+  }).catch(function(e){console.log('sb load error:',e);});
 
-  fetch(SB_URL+'/rest/v1/avisos?select=*&order=created_at.desc',{
-    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'}
-  }).then(function(r){return r.json();}).then(function(data){
-    if(data&&Array.isArray(data)&&data.length>0){
-      notifs=data.map(function(n){
-        return{id:n.id,titulo:n.titulo||'',msg:n.mensaje||'',
-        tipo:n.tipo||'info',leido:false,
-        fecha:new Date(n.created_at).toLocaleDateString('es-DO')};
-      });
-      localStorage.setItem('bf_notifs',JSON.stringify(notifs));
-      if(typeof updateNotifDot==='function')updateNotifDot();
-    }
+  fetch(SB_URL+'/avisos?select=*&order=created_at.desc',{headers:SB_HDR})
+  .then(function(r){return r.json();})
+  .then(function(data){
+    if(!Array.isArray(data)||data.length===0) return;
+    notifs=data.map(function(n){
+      return{id:n.id,titulo:n.titulo||'',msg:n.mensaje||'',
+      tipo:n.tipo||'info',leido:false,
+      fecha:new Date(n.created_at).toLocaleDateString('es-DO')};
+    });
+    localStorage.setItem('bf_notifs',JSON.stringify(notifs));
+    if(typeof updateNotifDot==='function')updateNotifDot();
   }).catch(function(e){console.log('sb avisos error:',e);});
+};
+
+/* Guardar integrante en Supabase */
+window._sbSave=function(m, isNew){
+  if(!m) return;
+  var d={nombre:m.nombre,apodo:m.apodo||'',cedula:m.cedula,
+    nacimiento:m.nacimiento||null,sangre:m.sangre||'',ocupacion:m.ocupacion||'',
+    tel1:m.tel1||'',tel2:m.tel2||'',dir:m.dir||'',alergias:m.alergias||'',
+    padecimientos:m.padecimientos||'',medicamentos:m.medicamentos||'',
+    rango:m.rango,estado:m.estado,ingreso:m.ingreso||null,
+    numbrigada:m.numbrigada||'',razon:m.razon||'',habilidades:m.habilidades||'',
+    cursos:Array.isArray(m.cursos)?m.cursos.join(','):'',
+    emname:m.emname||'',emrel:m.emrel||'',emtel:m.emtel||'',
+    notas:m.notas||'',foto:m.foto||'',asistencia:m.asistencia||{}};
+
+  if(isNew){
+    fetch(SB_URL+'/integrantes',{method:'POST',headers:Object.assign({},SB_HDR,{'Prefer':'return=representation'}),body:JSON.stringify(d)})
+    .then(function(r){return r.json();})
+    .then(function(res){
+      if(res&&res[0]&&res[0].id){
+        // Update local id with Supabase id
+        var last=members[members.length-1];
+        if(last&&last.nombre===m.nombre) last.id=res[0].id;
+        localStorage.setItem('bf_members',JSON.stringify(members));
+      }
+    }).catch(function(e){console.log('sb insert error:',e);});
+  } else {
+    fetch(SB_URL+'/integrantes?id=eq.'+m.id,{method:'PATCH',headers:SB_HDR,body:JSON.stringify(d)})
+    .catch(function(e){console.log('sb update error:',e);});
+  }
 };
 </script>
 </body>
