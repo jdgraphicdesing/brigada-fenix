@@ -530,7 +530,7 @@ function switchLoginTab(tab){
 }
 function loginAdmin(){
   const p = document.getElementById('admin-pass').value;
-  if(p === ADMIN_PASS){ currentMode='admin'; showScreen('screen-admin'); goTo('dashboard'); }
+  if(p === ADMIN_PASS){ currentMode='admin'; showScreen('screen-admin'); goTo('dashboard'); setTimeout(function(){ if(typeof window._sbLoad==='function') window._sbLoad(); },500); }
   else{ document.getElementById('admin-error').style.display='block'; }
 }
 function loginMember(){
