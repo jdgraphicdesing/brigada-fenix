@@ -1176,6 +1176,8 @@ function previewPhoto(e){
 }
 function openAddModal(){
   editId=null; currentPhoto='';
+  const ecEl=document.getElementById('f-estado-civil');if(ecEl)ecEl.value='';
+  const emEl=document.getElementById('f-email');if(emEl)emEl.value='';
   document.getElementById('modal-member-title').textContent='Nuevo integrante';
   ['nombre','apodo','cedula','ocupacion','tel1','tel2','dir','alergias','padecimientos','medicamentos','numbrigada','razon','habilidades','cursos','emname','emrel','emtel','notas','nacimiento','ingreso'].forEach(f=>{const el=document.getElementById('f-'+f);if(el)el.value='';});
   document.getElementById('f-sangre').value='';
@@ -1188,9 +1190,10 @@ function openEditModal(id){
   editId=id; const m=members.find(i=>i.id===id);if(!m)return;
   currentPhoto=m.foto||'';
   document.getElementById('modal-member-title').textContent='Editar integrante';
-  const cv={nombre:m.nombre,apodo:m.apodo,cedula:m.cedula,ocupacion:m.ocupacion,tel1:m.tel1,tel2:m.tel2,dir:m.dir,alergias:m.alergias,padecimientos:m.padecimientos,medicamentos:m.medicamentos,numbrigada:m.numbrigada,razon:m.razon,habilidades:m.habilidades,cursos:getCursos(m).join(', '),emname:m.emname,emrel:m.emrel,emtel:m.emtel,notas:m.notas,nacimiento:m.nacimiento,ingreso:m.ingreso};
+  const cv={nombre:m.nombre,apodo:m.apodo,cedula:m.cedula,ocupacion:m.ocupacion,tel1:m.tel1,tel2:m.tel2,email:m.email||'',dir:m.dir,alergias:m.alergias,padecimientos:m.padecimientos,medicamentos:m.medicamentos,numbrigada:m.numbrigada,razon:m.razon,habilidades:m.habilidades,cursos:getCursos(m).join(', '),emname:m.emname,emrel:m.emrel,emtel:m.emtel,notas:m.notas,nacimiento:m.nacimiento,ingreso:m.ingreso};
   Object.entries(cv).forEach(([k,v])=>{const el=document.getElementById('f-'+k);if(el)el.value=v||'';});
   document.getElementById('f-sangre').value=m.sangre||'';
+  const ecEl=document.getElementById('f-estado-civil');if(ecEl)ecEl.value=m.estadoCivil||'';
   document.getElementById('f-rango').value=m.rango;
   document.getElementById('f-estado').value=m.estado;
   const p=document.getElementById('photo-preview');
