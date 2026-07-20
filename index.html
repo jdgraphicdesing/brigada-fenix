@@ -332,6 +332,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 .btn-share { background:#dc2626; color:#fff; }
 .btn-share:hover { background:#b91c1c; }
 .btn-close-share { background:transparent; color:#6b7280; border:1px solid #374151 !important; }
+@keyframes spin{to{transform:rotate(360deg);}}
 </style>
 </head>
 <body>
@@ -569,11 +570,15 @@ function loginAdmin(){
   const p = document.getElementById('admin-pass').value;
   if(p === ADMIN_PASS){
     currentMode='admin';
+    // Clear stale localStorage so Supabase always wins
+    localStorage.removeItem('bf_members');
+    localStorage.removeItem('bf_notifs');
+    members=[]; notifs=[];
     showScreen('screen-admin');
-    // Load from Supabase first, then render dashboard
-    window._sbLoad(function(){
-      goTo('dashboard');
-    });
+    // Show loading state then load from Supabase
+    var c=document.getElementById('admin-content');
+    if(c) c.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:60vh;flex-direction:column;gap:1rem;"><div style="width:40px;height:40px;border:3px solid #333;border-top-color:#dc2626;border-radius:50%;animation:spin 0.8s linear infinite;"></div><div style="color:#6b7280;font-size:.85rem;letter-spacing:.05em;">Cargando datos...</div></div>';
+    window._sbLoad(function(){ goTo('dashboard'); });
   }
   else{ document.getElementById('admin-error').style.display='block'; }
 }
@@ -1394,12 +1399,15 @@ window._sbLoad=function(callback){
       notas:m.notas||'',foto:m.foto||'',email:m.email||'',estadoCivil:m.estadoCivil||'',asistencia:m.asistencia||{}};
     });
     localStorage.setItem('bf_members',JSON.stringify(members));
-    if(callback) { callback(); }
+    if(typeof callback==='function'){ callback(); }
     else {
       var c=document.getElementById('admin-content');
       if(c&&typeof renderDashboard==='function')renderDashboard(c);
     }
-  }).catch(function(e){console.log('sb load error:',e); if(callback) callback();});
+  }).catch(function(e){
+    console.log('sb load error:',e);
+    if(typeof callback==='function') callback();
+  });
 
   fetch(SB_URL+'/avisos?select=*&order=created_at.desc',{headers:SB_HDR})
   .then(function(r){return r.json();})
