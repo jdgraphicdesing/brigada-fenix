@@ -977,7 +977,7 @@ function markAttendance(id, tipo, valor){
   const m=members.find(i=>i.id===id);if(!m)return;
   if(!m.asistencia)m.asistencia={};
   const key=new Date().getFullYear()+'-'+new Date().getMonth();
-  if(!m.asistencia[key])m.asistencia[key]={reunion:null,servicio:null};
+  if(!m.asistencia[key])m.asistencia[key]={reunion:null,servicio:null,apoyo:null,fenix:null};
   m.asistencia[key][tipo]=m.asistencia[key][tipo]===valor?null:valor;
   saveLS('bf_members',members);
   renderExpediente(document.getElementById('admin-content'),id);
@@ -995,37 +995,110 @@ function switchTab(btn, tabId){
 // ASISTENCIA VIEW
 // ════════════════════════════════
 function renderAsistencia(c){
-  const mes=parseInt(document.getElementById('asist-mes-sel')?.value??new Date().getMonth());
-  const anio=parseInt(document.getElementById('asist-anio-sel')?.value??new Date().getFullYear());
+  const hoy=new Date();
+  const mes=parseInt(document.getElementById('asist-mes-sel')?.value??hoy.getMonth());
+  const anio=parseInt(document.getElementById('asist-anio-sel')?.value??hoy.getFullYear());
   const key=anio+'-'+mes;
+  const tipos=[
+    {id:'reunion',label:'Reunión Halcón',color:'#f59e0b'},
+    {id:'servicio',label:'Servicio Brigada',color:'#3b82f6'},
+    {id:'actividad',label:'Actividad Especial',color:'#8b5cf6',special:true},
+    {id:'fenix1',label:'Reunión Fénix 1',color:'#ef4444'},
+    {id:'fenix2',label:'Reunión Fénix 2',color:'#dc2626'}
+  ];
+  const years=[];
+  for(var y=2024;y<=hoy.getFullYear()+1;y++) years.push(y);
   c.innerHTML=`
   <div class="page-header"><div class="page-title">Asistencia</div></div>
-  <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;">
+  <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center;">
     <select id="asist-mes-sel" style="background:#111;border:1px solid var(--b2);border-radius:5px;padding:7px 10px;color:var(--text);font-size:13px;" onchange="renderAsistencia(document.getElementById('admin-content'))">
       ${MESES_FULL.map((m,i)=>`<option value="${i}" ${i===mes?'selected':''}>${m}</option>`).join('')}
     </select>
     <select id="asist-anio-sel" style="background:#111;border:1px solid var(--b2);border-radius:5px;padding:7px 10px;color:var(--text);font-size:13px;" onchange="renderAsistencia(document.getElementById('admin-content'))">
-      <option value="2025" ${anio===2025?'selected':''}>2025</option>
-      <option value="2026" ${anio===2026?'selected':''}>2026</option>
-      <option value="2027" ${anio===2027?'selected':''}>2027</option>
+      ${years.map(y=>`<option value="${y}" ${y===anio?'selected':''}>${y}</option>`).join('')}
     </select>
   </div>
-  <div class="asist-table">
-    <div class="asist-hdr"><div>Integrante</div><div style="text-align:center;">Reunión</div><div style="text-align:center;">Servicio</div></div>
-    ${members.map(m=>{
-      const d=(m.asistencia||{})[key]||{reunion:null,servicio:null};
-      const ri=d.reunion===true?'<i class="ti ti-check" style="color:var(--green3);font-size:16px;"></i>':d.reunion===false?'<i class="ti ti-x" style="color:var(--red3);font-size:16px;"></i>':'<span style="color:var(--text3);">—</span>';
-      const si=d.servicio===true?'<i class="ti ti-check" style="color:var(--green3);font-size:16px;"></i>':d.servicio===false?'<i class="ti ti-x" style="color:var(--red3);font-size:16px;"></i>':'<span style="color:var(--text3);">—</span>';
-      return`<div class="asist-row-item" onclick="openExpediente(${m.id})">
-        <div style="display:flex;align-items:center;gap:10px;">${photoEl(m,28,10)}
-          <div><div style="font-size:13px;font-weight:700;">${m.nombre}</div><div style="font-size:10px;color:var(--text2);">${m.rango}</div></div>
-        </div>
-        <div style="text-align:center;">${ri}</div>
-        <div style="text-align:center;">${si}</div>
-      </div>`;
-    }).join('')}
+  <div style="overflow-x:auto;">
+  <table style="width:100%;border-collapse:collapse;min-width:700px;">
+    <thead>
+      <tr style="background:#111;border-bottom:1px solid #222;">
+        <th style="text-align:left;padding:10px 12px;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.05em;min-width:180px;">Integrante</th>
+        ${tipos.map(t=>`<th style="text-align:center;padding:10px 8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:${t.color};">${t.label}</th>`).join('')}
+        <th style="text-align:left;padding:10px 12px;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Justificación</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${members.map(m=>{
+        const d=(m.asistencia||{})[key]||{};
+        return`<tr style="border-bottom:1px solid #1a1a1a;" onmouseover="this.style.background='#111'" onmouseout="this.style.background='transparent'">
+          <td style="padding:10px 12px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              ${photoEl(m,30,10)}
+              <div>
+                <div style="font-size:13px;font-weight:600;">${m.nombre}</div>
+                <div style="font-size:10px;color:#6b7280;">${m.rango}</div>
+              </div>
+            </div>
+          </td>
+          ${tipos.map(t=>{
+            const v=d[t.id];
+            if(t.special){
+              // Actividad especial - dropdown selector
+              const opciones=['','Apoyo a otra brigada','Capacitación','Apoyo logística ext.','Apoyo día especial','Otros'];
+              const selVal=typeof v==='string'?v:'';
+              return`<td style="text-align:center;padding:8px;">
+                <select onchange="markActividadEspecial(${m.id},'${key}',this.value)"
+                  style="background:${selVal?'#4c1d95':'#1f2937'};color:${selVal?'#c4b5fd':'#6b7280'};border:1px solid ${selVal?'#8b5cf6':'#374151'};border-radius:4px;padding:4px 6px;font-size:10px;cursor:pointer;max-width:130px;">
+                  ${opciones.map(o=>`<option value="${o}" ${selVal===o?'selected':''}>${o||'— Sin marcar —'}</option>`).join('')}
+                </select>
+              </td>`;
+            }
+            return`<td style="text-align:center;padding:10px 8px;">
+              <button onclick="markAsistencia(${m.id},'${t.id}',true,'${key}')" style="background:${v===true?t.color:'#1f2937'};color:${v===true?'#fff':'#6b7280'};border:1px solid ${v===true?t.color:'#374151'};border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;font-weight:600;margin:1px;">✓</button>
+              <button onclick="markAsistencia(${m.id},'${t.id}',false,'${key}')" style="background:${v===false?'#dc2626':'#1f2937'};color:${v===false?'#fff':'#6b7280'};border:1px solid ${v===false?'#dc2626':'#374151'};border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;font-weight:600;margin:1px;">✗</button>
+            </td>`;
+          }).join('')}
+          <td style="padding:8px 12px;">
+            <input type="text" value="${(d.justificacion||'')}" placeholder="Agregar justificación..." 
+              onchange="saveJustificacion(${m.id},'${key}',this.value)"
+              style="background:#111;border:1px solid #333;border-radius:4px;padding:5px 8px;color:#e5e7eb;font-size:12px;width:100%;min-width:150px;">
+          </td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table>
   </div>`;
 }
+
+function markAsistencia(id, tipo, valor, key){
+  const m=members.find(i=>i.id===id); if(!m) return;
+  if(!m.asistencia) m.asistencia={};
+  if(!m.asistencia[key]) m.asistencia[key]={};
+  // Toggle: if same value clicked again, clear it
+  m.asistencia[key][tipo] = m.asistencia[key][tipo]===valor ? null : valor;
+  saveLS('bf_members',members);
+  window._sbSave(m, false);
+  renderAsistencia(document.getElementById('admin-content'));
+}
+
+function saveJustificacion(id, key, texto){
+  const m=members.find(i=>i.id===id); if(!m) return;
+  if(!m.asistencia) m.asistencia={};
+  if(!m.asistencia[key]) m.asistencia[key]={};
+  m.asistencia[key].justificacion=texto;
+  saveLS('bf_members',members);
+  window._sbSave(m, false);
+}
+
+function markActividadEspecial(id, key, valor){
+  const m=members.find(i=>i.id===id); if(!m) return;
+  if(!m.asistencia) m.asistencia={};
+  if(!m.asistencia[key]) m.asistencia[key]={};
+  m.asistencia[key].actividad = valor || null;
+  saveLS('bf_members',members);
+  window._sbSave(m, false);
+}
+
 
 // ════════════════════════════════
 // CURSOS
