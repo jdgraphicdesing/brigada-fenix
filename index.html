@@ -384,6 +384,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 .btn-share:hover { background:#b91c1c; }
 .btn-close-share { background:transparent; color:#6b7280; border:1px solid #374151 !important; }
 @keyframes spin{to{transform:rotate(360deg);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
 </style>
 </head>
 <body>
@@ -639,7 +640,12 @@ function loginMember(){
   // Try local first, then load from Supabase
   function tryLogin(){
     const m = members.find(x=>x.cedula===ced && x.estado!=='Inactivo');
-    if(m){ currentUser=m; currentMode='member'; showScreen('screen-member'); renderMemberView(); return true; }
+    if(m){ 
+      currentUser=m; currentMode='member'; showScreen('screen-member'); renderMemberView();
+      // Show notification bubble if there are unread notices
+      setTimeout(function(){ showNotifBubble(); }, 500);
+      return true; 
+    }
     return false;
   }
   if(tryLogin()) return;
@@ -1179,27 +1185,49 @@ function renderNotificaciones(c){
   notifs.forEach(n=>n.leido=true); saveLS('bf_notifs',notifs); updateNotifDot();
   c.innerHTML=`
   <div class="page-header"><div class="page-title">Avisos</div></div>
-  <div class="row-between">
+  <div class="row-between" style="margin-bottom:1rem;">
     <div style="font-size:12px;color:var(--text2);">${notifs.length} aviso${notifs.length!==1?'s':''}</div>
     <button class="btn btn-gold btn-sm" onclick="openModal('modal-notif')"><i class="ti ti-plus"></i> Nuevo aviso</button>
   </div>
   <div class="notif-panel">
-    ${!notifs.length?'<div class="empty"><i class="ti ti-bell-off"></i>Sin avisos</div>':
+    ${!notifs.length?'<div class="empty"><i class="ti ti-bell-off"></i>Sin avisos publicados</div>':
     notifs.slice().reverse().map(n=>{
       const ico=n.tipo==='urgente'?'🚨':n.tipo==='evento'?'📅':'📢';
-      const col=n.tipo==='urgente'?'var(--red3)':n.tipo==='evento'?'var(--blue2)':'var(--text2)';
-      return`<div class="notif-item">
-        <div style="font-size:20px;flex-shrink:0;">${ico}</div>
-        <div style="flex:1;">
-          <div style="font-size:13px;font-weight:700;color:${col};">${n.titulo}</div>
-          <div style="font-size:12px;color:var(--text2);margin-top:2px;">${n.msg}</div>
-          <div class="notif-time" style="margin-top:4px;">${new Date(n.fecha).toLocaleDateString('es-DO',{day:'numeric',month:'long',year:'numeric'})}</div>
+      const col=n.tipo==='urgente'?'var(--red3)':n.tipo==='evento'?'var(--blue2)':'var(--gold2)';
+      const colBg=n.tipo==='urgente'?'rgba(220,38,38,.08)':n.tipo==='evento'?'rgba(37,99,235,.08)':'rgba(201,168,76,.06)';
+      const colBorder=n.tipo==='urgente'?'rgba(220,38,38,.3)':n.tipo==='evento'?'rgba(37,99,235,.3)':'rgba(201,168,76,.2)';
+      return`<div class="notif-item" id="notif-${n.id}" style="cursor:pointer;border:1px solid ${colBorder};background:${colBg};border-radius:8px;padding:1rem;margin-bottom:.75rem;" onclick="toggleNotif(${n.id})">
+        <div style="display:flex;align-items:flex-start;gap:12px;">
+          <div style="font-size:22px;flex-shrink:0;">${ico}</div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+              <div style="font-size:14px;font-weight:700;color:${col};">${n.titulo}</div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <i class="ti ti-chevron-down" id="notif-icon-${n.id}" style="color:var(--text3);font-size:14px;transition:transform .2s;"></i>
+                <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteNotif(${n.id})"><i class="ti ti-trash"></i></button>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">${n.fecha||''}</div>
+            <div id="notif-body-${n.id}" style="display:none;margin-top:.75rem;padding-top:.75rem;border-top:1px solid rgba(255,255,255,.06);">
+              <div style="font-size:13px;color:var(--text);line-height:1.6;white-space:pre-wrap;">${n.msg}</div>
+            </div>
+          </div>
         </div>
-        <button class="btn btn-danger btn-sm" onclick="deleteNotif(${n.id})"><i class="ti ti-trash"></i></button>
       </div>`;
     }).join('')}
   </div>`;
 }
+
+function toggleNotif(id){
+  var body=document.getElementById('notif-body-'+id);
+  var icon=document.getElementById('notif-icon-'+id);
+  if(!body) return;
+  var isOpen=body.style.display==='block';
+  body.style.display=isOpen?'none':'block';
+  if(icon) icon.style.transform=isOpen?'rotate(0deg)':'rotate(180deg)';
+}
+
+
 function saveNotif(){
   const t=document.getElementById('notif-titulo').value.trim();
   const msg=document.getElementById('notif-msg').value.trim();
@@ -1642,6 +1670,31 @@ function shareEmail(){
   var subject='Brigada Fénix - Sistema de Gestión';
   var body='Te comparto el acceso al Sistema de Gestión Interna de Brigada Fénix:%0A%0A'+url;
   window.open('mailto:?subject='+subject+'&body='+body,'_blank');
+}
+
+function showNotifBubble(){
+  if(!notifs || notifs.length === 0) return;
+  // Remove existing bubble if any
+  var existing = document.getElementById('notif-bubble');
+  if(existing) existing.remove();
+  
+  var count = notifs.length;
+  var bubble = document.createElement('div');
+  bubble.id = 'notif-bubble';
+  bubble.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;animation:fadeIn .3s ease;';
+  bubble.innerHTML = 
+    '<div style="background:#1a1a1a;border:1px solid rgba(201,168,76,.4);border-radius:16px;padding:2rem;text-align:center;max-width:320px;width:90%;box-shadow:0 0 40px rgba(201,168,76,.15);">' +
+    '<div style="font-size:48px;margin-bottom:.5rem;">🔔</div>' +
+    '<div style="font-size:1.3rem;font-weight:800;color:#fff;letter-spacing:.05em;margin-bottom:.25rem;">¡TIENES AVISOS!</div>' +
+    '<div style="font-size:2.5rem;font-weight:800;color:#c9a84c;margin:.5rem 0;">'+count+'</div>' +
+    '<div style="font-size:13px;color:#9ca3af;margin-bottom:1.5rem;">aviso'+( count!==1?'s':'')+' publicado'+(count!==1?'s':'')+' para la brigada</div>' +
+    '<button onclick="document.getElementById(\'notif-bubble\').remove();goTo(\'notificaciones\')" ' +
+    'style="background:#dc2626;color:#fff;border:none;border-radius:8px;padding:.75rem 1.5rem;font-size:14px;font-weight:700;cursor:pointer;width:100%;margin-bottom:.5rem;letter-spacing:.05em;">📋 VER AVISOS</button>' +
+    '<button onclick="document.getElementById(\'notif-bubble\').remove()" ' +
+    'style="background:transparent;color:#6b7280;border:1px solid #374151;border-radius:8px;padding:.6rem 1.5rem;font-size:13px;cursor:pointer;width:100%;">Cerrar</button>' +
+    '</div>';
+  document.body.appendChild(bubble);
+  bubble.addEventListener('click', function(e){ if(e.target===bubble) bubble.remove(); });
 }
 </script>
 </body>
