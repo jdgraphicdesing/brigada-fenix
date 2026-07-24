@@ -1577,7 +1577,7 @@ window._sbLoad=function(callback){
   fetch(SB_URL+'/avisos?select=*&order=created_at.desc',{headers:SB_HDR})
   .then(function(r){return r.json();})
   .then(function(data){
-    if(!Array.isArray(data)||data.length===0) return;
+    if(!Array.isArray(data)) return;
     notifs=data.map(function(n){
       return{id:n.id,titulo:n.titulo||'',msg:n.mensaje||'',
       tipo:n.tipo||'info',leido:false,
