@@ -296,7 +296,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 /* MOBILE NAV */
 .mobile-nav { display:none; position:fixed; bottom:0; left:0; right:0; z-index:999; background:#0e0e0e; border-top:1px solid rgba(185,28,28,.4); padding:6px 0 10px; }
 .mobile-nav-items { display:flex; justify-content:space-around; align-items:center; }
-.mob-btn { display:flex; flex-direction:column; align-items:center; gap:3px; background:none; border:none; color:#9ca3af; font-size:9px; text-transform:uppercase; letter-spacing:.5px; cursor:pointer; padding:4px 8px; }
+.mob-btn { display:flex; flex-direction:column; align-items:center; gap:2px; background:none; border:none; color:#9ca3af; font-size:8px; text-transform:uppercase; letter-spacing:.3px; cursor:pointer; padding:4px 4px; }
 .mob-btn i { font-size:20px; }
 .mob-btn.active { color:#ef4444; }
 .mob-btn:hover { color:#fff; }
@@ -1508,10 +1508,11 @@ updateNotifDot();
 <div class="mobile-nav" id="mobile-nav">
   <div class="mobile-nav-items">
     <button class="mob-btn active" onclick="goTo('dashboard');setMobActive(this)"><i class="ti ti-layout-dashboard"></i>Panel</button>
-    <button class="mob-btn" onclick="goTo('integrantes');setMobActive(this)"><i class="ti ti-users"></i>Miembros</button>
+    <button class="mob-btn" onclick="goTo('integrantes');setMobActive(this)"><i class="ti ti-users"></i>Integrantes</button>
     <button class="mob-btn" onclick="goTo('asistencia');setMobActive(this)"><i class="ti ti-calendar-check"></i>Asistencia</button>
+    <button class="mob-btn" onclick="goTo('cursos');setMobActive(this)"><i class="ti ti-certificate"></i>Cursos</button>
     <button class="mob-btn" onclick="goTo('notificaciones');setMobActive(this)"><i class="ti ti-bell"></i>Avisos</button>
-    <button class="mob-btn" onclick="logoutAdmin();setMobActive(this)"><i class="ti ti-door-exit"></i>Salir</button>
+    <button class="mob-btn" onclick="logout();setMobActive(this)"><i class="ti ti-door-exit"></i>Salir</button>
   </div>
 </div>
 <div class="mobile-nav" id="mobile-nav-member" style="display:none;">
@@ -1949,6 +1950,8 @@ function logoutMember(){
   document.getElementById('member-cedula').value='';
   startLoginAnim();
 }
+
+function logoutAdmin(){ logout(); }
 </script>
 </body>
 </html>
