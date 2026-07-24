@@ -1513,6 +1513,14 @@ updateNotifDot();
     <button class="mob-btn" onclick="logoutAdmin();setMobActive(this)"><i class="ti ti-door-exit"></i>Salir</button>
   </div>
 </div>
+<div class="mobile-nav" id="mobile-nav-member" style="display:none;">
+  <div class="mobile-nav-items">
+    <button class="mob-btn active" onclick="showMemberHome();setMemberMobActive(this)"><i class="ti ti-layout-dashboard"></i>Inicio</button>
+    <button class="mob-btn" onclick="showMemberAvisos();setMemberMobActive(this)"><i class="ti ti-bell"></i>Avisos</button>
+    <button class="mob-btn" onclick="logoutMember();setMemberMobActive(this)"><i class="ti ti-door-exit"></i>Salir</button>
+  </div>
+</div>
+
 
 <script>/* FLAMES */
 var _lS,_lP,_lSC,_lPC,_lFL=[],_lEM=[],_lT=0,_lR=null;
@@ -1619,7 +1627,9 @@ var _origShowScreen = showScreen;
 showScreen = function(id){
   _origShowScreen(id);
   var nav = document.getElementById('mobile-nav');
+  var navMember = document.getElementById('mobile-nav-member');
   if(nav) nav.style.display = id==='screen-admin' ? 'block' : 'none';
+  if(navMember) navMember.style.display = id==='screen-member' ? 'block' : 'none';
 };
 
 /* Eliminar integrante de Supabase */
@@ -1690,7 +1700,7 @@ function showNotifBubble(){
     '<div style="font-size:1.3rem;font-weight:800;color:#fff;letter-spacing:.05em;margin-bottom:.25rem;">¡TIENES AVISOS!</div>' +
     '<div style="font-size:2.5rem;font-weight:800;color:#c9a84c;margin:.5rem 0;">'+count+'</div>' +
     '<div style="font-size:13px;color:#9ca3af;margin-bottom:1.5rem;">aviso'+( count!==1?'s':'')+' publicado'+(count!==1?'s':'')+' para la brigada</div>' +
-    '<button onclick="document.getElementById(\'notif-bubble\').remove();goTo(\'notificaciones\')" ' +
+    '<button onclick="document.getElementById(\'notif-bubble\').remove();showMemberAvisos()" ' +
     'style="background:#dc2626;color:#fff;border:none;border-radius:8px;padding:.75rem 1.5rem;font-size:14px;font-weight:700;cursor:pointer;width:100%;margin-bottom:.5rem;letter-spacing:.05em;">📋 VER AVISOS</button>' +
     '<button onclick="document.getElementById(\'notif-bubble\').remove()" ' +
     'style="background:transparent;color:#6b7280;border:1px solid #374151;border-radius:8px;padding:.6rem 1.5rem;font-size:13px;cursor:pointer;width:100%;">Cerrar</button>' +
@@ -1883,6 +1893,60 @@ function playNotifSound(){
       osc.stop(ctx.currentTime + t + 0.4);
     });
   } catch(e){ console.log('Audio not available:', e); }
+}
+
+function showMemberAvisos(){
+  var mc = document.getElementById('member-content');
+  if(!mc) return;
+  mc.innerHTML = '<div style="padding-bottom:2rem;">' +
+    '<div style="margin-bottom:1rem;"><button onclick="showMemberHome()" style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:13px;"><i class="ti ti-arrow-left"></i> Volver</button></div>' +
+    '<div style="font-size:1.2rem;font-weight:800;color:#fff;letter-spacing:.1em;margin-bottom:1rem;border-left:3px solid #dc2626;padding-left:.75rem;">AVISOS</div>' +
+    (notifs.length === 0 ? '<div style="text-align:center;color:#6b7280;padding:2rem;">Sin avisos publicados</div>' :
+    notifs.slice().reverse().map(function(n){
+      var ico = n.tipo==='urgente'?'🚨':n.tipo==='evento'?'📅':'📢';
+      var col = n.tipo==='urgente'?'#dc2626':n.tipo==='evento'?'#3b82f6':'#c9a84c';
+      var colBg = n.tipo==='urgente'?'rgba(220,38,38,.08)':n.tipo==='evento'?'rgba(37,99,235,.08)':'rgba(201,168,76,.06)';
+      return '<div style="border:1px solid '+col+';background:'+colBg+';border-radius:8px;padding:1rem;margin-bottom:.75rem;cursor:pointer;" onclick="toggleMemberNotif('+n.id+')">' +
+        '<div style="display:flex;align-items:center;gap:10px;">' +
+        '<span style="font-size:20px;">'+ico+'</span>' +
+        '<div style="flex:1;">' +
+        '<div style="font-size:14px;font-weight:700;color:'+col+';">'+n.titulo+'</div>' +
+        '<div style="font-size:10px;color:#6b7280;">'+( n.fecha||'')+'</div>' +
+        '</div>' +
+        '<i class="ti ti-chevron-down" id="mn-icon-'+n.id+'" style="color:#6b7280;transition:transform .2s;"></i>' +
+        '</div>' +
+        '<div id="mn-body-'+n.id+'" style="display:none;margin-top:.75rem;padding-top:.75rem;border-top:1px solid rgba(255,255,255,.08);font-size:13px;color:#e5e7eb;line-height:1.6;white-space:pre-wrap;">'+n.msg+'</div>' +
+        '</div>';
+    }).join('')) +
+    '</div>';
+}
+
+function toggleMemberNotif(id){
+  var body = document.getElementById('mn-body-'+id);
+  var icon = document.getElementById('mn-icon-'+id);
+  if(!body) return;
+  var isOpen = body.style.display === 'block';
+  body.style.display = isOpen ? 'none' : 'block';
+  if(icon) icon.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+
+function showMemberHome(){
+  renderMemberView();
+  var btns = document.querySelectorAll('#mobile-nav-member .mob-btn');
+  btns.forEach(function(b){ b.classList.remove('active'); });
+  if(btns[0]) btns[0].classList.add('active');
+}
+
+function setMemberMobActive(el){
+  document.querySelectorAll('#mobile-nav-member .mob-btn').forEach(function(b){ b.classList.remove('active'); });
+  if(el) el.classList.add('active');
+}
+
+function logoutMember(){
+  currentUser=null; currentMode=null;
+  showScreen('screen-login');
+  document.getElementById('member-cedula').value='';
+  startLoginAnim();
 }
 </script>
 </body>
