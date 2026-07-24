@@ -596,9 +596,7 @@ let members = loadData('bf_members', [
   {id:3,nombre:'Ana Martínez',apodo:'La Rápida',cedula:'001-3456789-3',nacimiento:'2000-11-05',sangre:'B+',ocupacion:'Estudiante',tel1:'809-555-0003',tel2:'809-555-0033',dir:'Los Alcarrizos',alergias:'Látex',padecimientos:'Asma leve',medicamentos:'Salbutamol inhalador',rango:'Aspirante',estado:'Aspirante',ingreso:'2026-01-10',numbrigada:'BF-003',razon:'Quiere servir a su comunidad',habilidades:'Atletismo, Primeros auxilios básicos',cursos:['Primeros Auxilios Básico'],emname:'Rosa Martínez',emrel:'Madre',emtel:'809-555-0030',notas:'Pendiente completar aspirantado.',asistencia:{},foto:''}
 ]);
 
-let notifs = loadData('bf_notifs', [
-  {id:1, titulo:'Bienvenido al sistema Brigada Fénix', msg:'El sistema de gestión interna ya está activo. Puedes ver tu expediente, asistencia y cursos.', tipo:'info', fecha: new Date().toISOString(), leido:false}
-]);
+let notifs = loadData('bf_notifs', []);
 
 let currentUser = null;
 let currentMode = null;
@@ -1239,6 +1237,9 @@ function saveNotif(){
 }
 function deleteNotif(id){
   notifs=notifs.filter(n=>n.id!==id); saveLS('bf_notifs',notifs);
+  // Delete from Supabase
+  fetch(SB_URL+'/avisos?id=eq.'+id,{method:'DELETE',headers:SB_HDR})
+  .catch(function(e){console.log('sb delete notif:',e);});
   renderNotificaciones(document.getElementById('admin-content'));
 }
 
