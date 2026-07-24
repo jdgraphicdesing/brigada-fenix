@@ -37,7 +37,7 @@
 body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-serif;min-height:100vh;overflow-x:hidden;}
 
 /* ── SCREEN MANAGER ── */
-.screen{display:none;min-height:100vh;}
+.screen{display:none;min-height:100vh;width:100%;}
 .screen.active{display:flex;flex-direction:column;}
 
 /* ══════════════════════════════════════
@@ -1508,7 +1508,32 @@ function exportPDF(targets,secs){
     if(secs.asistencia&&m.asistencia&&Object.keys(m.asistencia).length){body+=st('Historial de asistencia');body+=`<table style="width:100%;border-collapse:collapse;"><tr style="background:#111;"><th style="padding:4px 6px;text-align:left;color:#d4a017;font-size:9px;border:.5px solid #333;">Mes</th><th style="padding:4px 6px;text-align:left;color:#d4a017;font-size:9px;border:.5px solid #333;">Reunión</th><th style="padding:4px 6px;text-align:left;color:#d4a017;font-size:9px;border:.5px solid #333;">Servicio</th></tr>`;Object.entries(m.asistencia).sort((a,b)=>b[0].localeCompare(a[0])).forEach(([k,v])=>{const[y,mo]=k.split('-');body+=`<tr><td style="padding:4px 6px;border:.5px solid #ddd;font-size:11px;">${MESES_FULL[parseInt(mo)]} ${y}</td><td style="padding:4px 6px;border:.5px solid #ddd;font-size:11px;">${v.reunion===true?'✓ Presente':v.reunion===false?'✗ Ausente':'—'}</td><td style="padding:4px 6px;border:.5px solid #ddd;font-size:11px;">${v.servicio===true?'✓ Presente':v.servicio===false?'✗ Ausente':'—'}</td></tr>`;});body+=`</table>`;}
     body+=`<div style="font-size:9px;color:#aaa;text-align:center;margin-top:24px;padding-top:8px;border-top:.5px solid #ddd;">Brigada Fénix · Unidad Operativa de Brigada Halcón · Documento confidencial</div></div>`;
   });
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Brigada Fénix</title><style>body{font-family:Arial,sans-serif;font-size:12px;margin:0;background:#fff;}@media print{button{display:none!important;}}</style></head><body>`);
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Brigada Fénix</title><style>body{font-family:Arial,sans-serif;font-size:12px;margin:0;background:#fff;}@media print{button{display:none!important;}}
+@media (max-width:768px) {
+  .sidenav { display:none !important; }
+  .main-content { padding:0.75rem !important; padding-bottom:75px !important; width:100% !important; }
+  .app-body { width:100% !important; overflow-x:hidden !important; }
+  .topbar { padding:0 0.75rem !important; min-height:52px !important; }
+  .topbar-title { font-size:11px !important; }
+  .topbar-logo { width:34px !important; height:34px !important; }
+  .user-chip { max-width:140px !important; }
+  .user-chip-name { font-size:11px !important; max-width:90px !important; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .kpi-grid { grid-template-columns:1fr 1fr !important; gap:0.5rem !important; }
+  .members-grid { grid-template-columns:1fr !important; }
+  .form-grid { grid-template-columns:1fr !important; }
+  .info-grid { grid-template-columns:1fr !important; }
+  .login-box { width:92vw !important; max-width:92vw !important; }
+  .login-title { font-size:1.3rem !important; }
+  .modal-box { width:95vw !important; max-height:85vh !important; overflow-y:auto !important; }
+  .exp-hero { flex-direction:column !important; align-items:center !important; }
+  .tab-bar { overflow-x:auto !important; -webkit-overflow-scrolling:touch !important; }
+  .tab-btn { white-space:nowrap !important; font-size:11px !important; }
+  input, select, textarea { font-size:16px !important; }
+}
+@media (min-width:769px) {
+  .sidenav { display:flex !important; }
+}
+</style></head><body>`);
   w.document.write(`<div style="background:#111;color:#fff;padding:12px 32px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #b91c1c;"><div><div style="font-size:16px;font-weight:800;letter-spacing:2px;">BRIGADA FÉNIX</div><div style="font-size:9px;color:#d4a017;letter-spacing:1px;">UNIDAD OPERATIVA DE BRIGADA HALCÓN</div></div><div style="font-size:10px;color:#666;">Generado: ${new Date().toLocaleDateString('es-DO')}</div></div>`);
   w.document.write(body);w.document.close();setTimeout(()=>w.print(),700);
 }
