@@ -304,7 +304,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 @media (max-width:768px) {
   /* Layout */
   .sidenav { display:none !important; }
-  .mobile-nav { display:block !important; }
+  /* mobile-nav controlled by JS showScreen */
   .main-content { padding:0.75rem !important; padding-bottom:75px !important; }
 
   /* Topbar */
@@ -366,7 +366,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 
 @media (min-width:769px) {
   .sidenav { display:flex !important; }
-  .mobile-nav { display:none !important; }
+  #mobile-nav, #mobile-nav-member { display:none !important; }
 }
 
 /* Share modal */
@@ -1630,8 +1630,8 @@ showScreen = function(id){
   _origShowScreen(id);
   var nav = document.getElementById('mobile-nav');
   var navMember = document.getElementById('mobile-nav-member');
-  if(nav) nav.style.display = id==='screen-admin' ? 'block' : 'none';
-  if(navMember) navMember.style.display = id==='screen-member' ? 'block' : 'none';
+  if(nav) { nav.style.cssText = id==='screen-admin' ? 'display:block!important' : 'display:none!important'; }
+  if(navMember) { navMember.style.cssText = id==='screen-member' ? 'display:block!important' : 'display:none!important'; }
 };
 
 /* Eliminar integrante de Supabase */
