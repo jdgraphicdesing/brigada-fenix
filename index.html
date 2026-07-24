@@ -275,7 +275,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 /* Replaced by 768px media query above */
 
 /* VISUAL */
-#screen-login { background:#000 !important; overflow:hidden; }
+#screen-login { background:radial-gradient(ellipse at 50% 30%, #2a0505 0%, #1a0202 40%, #000 100%) !important; overflow:hidden; }
 .login-logo { width:155px; height:155px; border-radius:50%; border:2.5px solid #c9a84c; overflow:hidden; margin:0 auto 1rem; position:relative; z-index:10; box-shadow: 0 0 0 10px rgba(201,168,76,.12), 0 0 0 12px rgba(201,168,76,.35), 0 0 0 22px rgba(201,168,76,.08), 0 0 0 24px rgba(201,168,76,.2), 0 0 40px rgba(201,168,76,.5), 0 0 80px rgba(180,60,0,.4); animation: logoFloat 3s ease-in-out infinite; }
 .login-logo img { width:100%; height:100%; object-fit:cover; display:block; }
 @keyframes logoFloat { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
@@ -283,15 +283,15 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 .nav-item { color:#e5e7eb !important; }
 .nav-item:hover { color:#fff !important; background:rgba(220,38,38,.15) !important; }
 .nav-item.active { color:#ef4444 !important; border-left-color:#ef4444 !important; background:rgba(220,38,38,.12) !important; }
-.main-content { position:relative !important; overflow:auto; }
+.main-content { position:relative !important; }
 .section-bg { position:absolute; inset:0; z-index:0; pointer-events:none; display:none; }
 .section-bg img { width:100%; height:100%; object-fit:cover; object-position:right center; }
 .section-bg.panel img { filter:saturate(.6) brightness(.45); }
-.section-bg.panel::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,#000 0%,#000 15%,rgba(0,0,0,.93) 25%,rgba(0,0,0,.8) 38%,rgba(0,0,0,.5) 58%,transparent 100%); }
+.section-bg.panel::after { content:''; position:absolute; inset:0; pointer-events:none; background:linear-gradient(90deg,#000 0%,#000 15%,rgba(0,0,0,.93) 25%,rgba(0,0,0,.8) 38%,rgba(0,0,0,.5) 58%,transparent 100%); }
 .section-bg.integrantes img { filter:saturate(.5) brightness(.4); }
-.section-bg.integrantes::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,#000 0%,#000 15%,rgba(0,0,0,.93) 25%,rgba(0,0,0,.85) 38%,rgba(0,0,0,.6) 55%,transparent 100%); }
+.section-bg.integrantes::after { content:''; position:absolute; inset:0; pointer-events:none; background:linear-gradient(90deg,#000 0%,#000 15%,rgba(0,0,0,.93) 25%,rgba(0,0,0,.85) 38%,rgba(0,0,0,.6) 55%,transparent 100%); }
 .section-bg.cursos img { filter:saturate(.25) brightness(.2); }
-.section-bg.cursos::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,#000 0%,#000 15%,rgba(0,0,0,.92) 25%,rgba(0,0,0,.8) 38%,rgba(0,0,0,.55) 58%,transparent 100%); }
+.section-bg.cursos::after { content:''; position:absolute; inset:0; pointer-events:none; background:linear-gradient(90deg,#000 0%,#000 15%,rgba(0,0,0,.92) 25%,rgba(0,0,0,.8) 38%,rgba(0,0,0,.55) 58%,transparent 100%); }
 
 /* MOBILE NAV */
 .mobile-nav { display:none; position:fixed; bottom:0; left:0; right:0; z-index:999; background:#0e0e0e; border-top:1px solid rgba(185,28,28,.4); padding:6px 0 10px; }
@@ -1536,7 +1536,7 @@ _Ember.prototype._upd=function(){this.x+=this.vx;this.y+=this.vy;this.vy*=.99;th
 _Ember.prototype._draw=function(ctx){var a=Math.min(1,(this.maxL-this.life)/this.maxL)*.85;ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fillStyle='hsla('+this.hue+',100%,65%,'+a+')';ctx.fill();};
 function startLoginAnim(){try{_lS=document.getElementById('login-canvas-scene');_lP=document.getElementById('login-canvas-particles');if(!_lS||!_lP)return;_lS.width=_lP.width=window.innerWidth;_lS.height=_lP.height=window.innerHeight;_lSC=_lS.getContext('2d');_lPC=_lP.getContext('2d');var w=window.innerWidth;_lFL=[];_lEM=[];_lT=0;for(var i=0;i<18;i++)_lFL.push(new _Flame(i*(w*.44/18)));for(var i=0;i<18;i++)_lFL.push(new _Flame(w*.56+i*(w*.44/18)));for(var i=0;i<50;i++)_lEM.push(new _Ember());if(_lR)cancelAnimationFrame(_lR);_lLoop();}catch(e){}}
 function _lLoop(){var sl=document.getElementById('screen-login');if(!sl||!sl.classList.contains('active')){_lR=null;return;}var w=window.innerWidth,h=window.innerHeight;_lT++;_lSC.fillStyle='#000';_lSC.fillRect(0,0,w,h);var bg=_lSC.createRadialGradient(w*.5,h*.36,0,w*.5,h*.36,w*.58);bg.addColorStop(0,'rgba(72,4,0,.92)');bg.addColorStop(.3,'rgba(35,0,0,.72)');bg.addColorStop(1,'rgba(0,0,0,0)');_lSC.fillStyle=bg;_lSC.fillRect(0,0,w,h);for(var i=0;i<_lFL.length;i++){_lFL[i]._upd(_lT);_lFL[i]._draw(_lSC);}_lPC.clearRect(0,0,w,h);for(var i=0;i<_lEM.length;i++){_lEM[i]._upd();_lEM[i]._draw(_lPC);}_lR=requestAnimationFrame(_lLoop);}
-window.addEventListener('load',function(){startLoginAnim();});
+// flame animation removed for performance
 
 /* BG SWITCHER */
 var _origGoTo=goTo;
