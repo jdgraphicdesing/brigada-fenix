@@ -335,10 +335,14 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 .fg label { color:#3a50a0 !important; }
 .fg input,.fg select,.fg textarea { background:rgba(0,10,60,.5) !important; border-color:rgba(18,48,200,.3) !important; color:#c0d0e8 !important; }
 .section-bg { display:none !important; }
+.mobile-nav { position:fixed; bottom:0; left:0; right:0; z-index:999; padding:6px 0 12px; }
 #mobile-nav { background:linear-gradient(90deg,#0a1560,#0d1e80) !important; border-top:2px solid #cc1a1a !important; }
 #mobile-nav-member { background:linear-gradient(90deg,#0a1560,#0d1e80) !important; border-top:2px solid #cc1a1a !important; }
-.mob-btn { color:#3a5080 !important; }
+.mobile-nav-items { display:flex; justify-content:space-around; align-items:center; }
+.mob-btn { display:flex; flex-direction:column; align-items:center; gap:3px; background:none; border:none; color:#3a5080 !important; font-size:8px; text-transform:uppercase; letter-spacing:.5px; cursor:pointer; padding:4px 6px; }
+.mob-btn i { font-size:20px; }
 .mob-btn.active { color:#cc1a1a !important; }
+.mob-btn:hover { color:#fff !important; }
 ::-webkit-scrollbar { width:4px; }
 ::-webkit-scrollbar-track { background:#0a0a14; }
 ::-webkit-scrollbar-thumb { background:#1230c8; border-radius:2px; }
@@ -1545,9 +1549,7 @@ function shareApp(){
   modal.addEventListener('click',function(e){if(e.target===modal)modal.remove();});
 }
 function shareWhatsApp(){var url='https://jdgraphicdesing.github.io/brigada-fenix';window.open('https://wa.me/?text=*BRIGADA%20F%C3%89NIX*%0ASistema%20de%20Gesti%C3%B3n%20Interna%0A'+encodeURIComponent(url),'_blank');}
-function shareEmail(){var url='https://jdgraphicdesing.github.io/brigada-fenix';window.open('mailto:?subject=Brigada%20F%C3%A9nix%20-%20Sistema%20de%20Gesti%C3%B3n&body='+encodeURIComponent('Sistema de Gestión Interna de Brigada Fénix:
-
-'+url),'_blank');}
+function shareEmail(){var url='https://jdgraphicdesing.github.io/brigada-fenix';window.open('mailto:?subject=Brigada%20F%C3%A9nix%20-%20Sistema%20de%20Gesti%C3%B3n&body='+encodeURIComponent('Sistema de Gestion Interna de Brigada Fenix: '+url),'_blank');}
 function copyShareLink(){navigator.clipboard.writeText('https://jdgraphicdesing.github.io/brigada-fenix').then(function(){showToast('Link copiado');var m=document.getElementById('share-modal');if(m)m.remove();}).catch(function(){showToast('Link: https://jdgraphicdesing.github.io/brigada-fenix');});}
 
 /* MEMBER FUNCTIONS */
