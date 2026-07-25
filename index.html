@@ -521,6 +521,68 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
   z-index: 0;
 }
 </style>
+
+<style>
+/* ══ RESPONSIVE MOBILE ══ */
+@media (max-width:768px) {
+  /* Ocultar sidebar completamente */
+  .sidenav { display:none !important; width:0 !important; }
+  
+  /* App body en columna */
+  .app-body { flex-direction:column !important; }
+  
+  /* Main content ocupa todo el ancho */
+  .main-content { 
+    width:100% !important; 
+    max-width:100vw !important;
+    padding:0.75rem !important; 
+    padding-bottom:75px !important;
+    overflow-x:hidden !important;
+  }
+  
+  /* Topbar compacto */
+  .topbar { padding:0 0.75rem !important; }
+  .topbar-logo { width:36px !important; height:36px !important; }
+  .topbar-title { font-size:11px !important; letter-spacing:.08em !important; }
+  .topbar-sub { font-size:7px !important; }
+  .user-chip-name { font-size:10px !important; max-width:80px !important; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .user-chip-role { display:none; }
+
+  /* KPIs en 2 columnas */
+  .kpi-grid { grid-template-columns:1fr 1fr !important; gap:0.5rem !important; }
+  
+  /* Cards en 1 columna */  
+  .members-grid { grid-template-columns:1fr !important; gap:0.5rem !important; }
+  
+  /* Formularios en 1 columna */
+  .form-grid { grid-template-columns:1fr !important; }
+  .info-grid { grid-template-columns:1fr !important; }
+  
+  /* Login */
+  .login-box { width:92vw !important; max-width:92vw !important; }
+  .login-title { font-size:1.3rem !important; }
+  
+  /* Modal */
+  .modal-box { width:95vw !important; max-height:85vh !important; overflow-y:auto !important; }
+  
+  /* Expediente */
+  .exp-hero { flex-direction:column !important; align-items:center !important; text-align:center !important; }
+  .exp-photo { width:80px !important; height:80px !important; }
+  .tab-bar { overflow-x:auto !important; -webkit-overflow-scrolling:touch !important; }
+  .tab-btn { white-space:nowrap !important; font-size:11px !important; padding:8px 10px !important; }
+  
+  /* Evitar zoom en inputs iOS */
+  input, select, textarea { font-size:16px !important; }
+  
+  /* Tabla asistencia scrolleable */
+  .main-content > div { max-width:100% !important; overflow-x:auto !important; }
+}
+
+@media (min-width:769px) {
+  .sidenav { display:flex !important; }
+  #mobile-nav, #mobile-nav-member { display:none !important; }
+}
+</style>
 </head>
 <body>
 
@@ -1508,32 +1570,70 @@ function exportPDF(targets,secs){
     if(secs.asistencia&&m.asistencia&&Object.keys(m.asistencia).length){body+=st('Historial de asistencia');body+=`<table style="width:100%;border-collapse:collapse;"><tr style="background:#111;"><th style="padding:4px 6px;text-align:left;color:#d4a017;font-size:9px;border:.5px solid #333;">Mes</th><th style="padding:4px 6px;text-align:left;color:#d4a017;font-size:9px;border:.5px solid #333;">Reunión</th><th style="padding:4px 6px;text-align:left;color:#d4a017;font-size:9px;border:.5px solid #333;">Servicio</th></tr>`;Object.entries(m.asistencia).sort((a,b)=>b[0].localeCompare(a[0])).forEach(([k,v])=>{const[y,mo]=k.split('-');body+=`<tr><td style="padding:4px 6px;border:.5px solid #ddd;font-size:11px;">${MESES_FULL[parseInt(mo)]} ${y}</td><td style="padding:4px 6px;border:.5px solid #ddd;font-size:11px;">${v.reunion===true?'✓ Presente':v.reunion===false?'✗ Ausente':'—'}</td><td style="padding:4px 6px;border:.5px solid #ddd;font-size:11px;">${v.servicio===true?'✓ Presente':v.servicio===false?'✗ Ausente':'—'}</td></tr>`;});body+=`</table>`;}
     body+=`<div style="font-size:9px;color:#aaa;text-align:center;margin-top:24px;padding-top:8px;border-top:.5px solid #ddd;">Brigada Fénix · Unidad Operativa de Brigada Halcón · Documento confidencial</div></div>`;
   });
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Brigada Fénix</title><style>body{font-family:Arial,sans-serif;font-size:12px;margin:0;background:#fff;}@media print{button{display:none!important;}}
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Brigada Fénix</title><style>body{font-family:Arial,sans-serif;font-size:12px;margin:0;background:#fff;}@media print{button{display:none!important;}}}
+</style>
+<style>
+/* ══ RESPONSIVE MOBILE ══ */
 @media (max-width:768px) {
-  .sidenav { display:none !important; }
-  .main-content { padding:0.75rem !important; padding-bottom:75px !important; width:100% !important; }
-  .app-body { width:100% !important; overflow-x:hidden !important; }
-  .topbar { padding:0 0.75rem !important; min-height:52px !important; }
-  .topbar-title { font-size:11px !important; }
-  .topbar-logo { width:34px !important; height:34px !important; }
-  .user-chip { max-width:140px !important; }
-  .user-chip-name { font-size:11px !important; max-width:90px !important; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  /* Ocultar sidebar completamente */
+  .sidenav { display:none !important; width:0 !important; }
+  
+  /* App body en columna */
+  .app-body { flex-direction:column !important; }
+  
+  /* Main content ocupa todo el ancho */
+  .main-content { 
+    width:100% !important; 
+    max-width:100vw !important;
+    padding:0.75rem !important; 
+    padding-bottom:75px !important;
+    overflow-x:hidden !important;
+  }
+  
+  /* Topbar compacto */
+  .topbar { padding:0 0.75rem !important; }
+  .topbar-logo { width:36px !important; height:36px !important; }
+  .topbar-title { font-size:11px !important; letter-spacing:.08em !important; }
+  .topbar-sub { font-size:7px !important; }
+  .user-chip-name { font-size:10px !important; max-width:80px !important; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .user-chip-role { display:none; }
+
+  /* KPIs en 2 columnas */
   .kpi-grid { grid-template-columns:1fr 1fr !important; gap:0.5rem !important; }
-  .members-grid { grid-template-columns:1fr !important; }
+  
+  /* Cards en 1 columna */  
+  .members-grid { grid-template-columns:1fr !important; gap:0.5rem !important; }
+  
+  /* Formularios en 1 columna */
   .form-grid { grid-template-columns:1fr !important; }
   .info-grid { grid-template-columns:1fr !important; }
+  
+  /* Login */
   .login-box { width:92vw !important; max-width:92vw !important; }
   .login-title { font-size:1.3rem !important; }
+  
+  /* Modal */
   .modal-box { width:95vw !important; max-height:85vh !important; overflow-y:auto !important; }
-  .exp-hero { flex-direction:column !important; align-items:center !important; }
+  
+  /* Expediente */
+  .exp-hero { flex-direction:column !important; align-items:center !important; text-align:center !important; }
+  .exp-photo { width:80px !important; height:80px !important; }
   .tab-bar { overflow-x:auto !important; -webkit-overflow-scrolling:touch !important; }
-  .tab-btn { white-space:nowrap !important; font-size:11px !important; }
+  .tab-btn { white-space:nowrap !important; font-size:11px !important; padding:8px 10px !important; }
+  
+  /* Evitar zoom en inputs iOS */
   input, select, textarea { font-size:16px !important; }
+  
+  /* Tabla asistencia scrolleable */
+  .main-content > div { max-width:100% !important; overflow-x:auto !important; }
 }
+
 @media (min-width:769px) {
   .sidenav { display:flex !important; }
+  #mobile-nav, #mobile-nav-member { display:none !important; }
 }
-</style></head><body>`);
+</style>
+</head><body>`);
   w.document.write(`<div style="background:#111;color:#fff;padding:12px 32px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #b91c1c;"><div><div style="font-size:16px;font-weight:800;letter-spacing:2px;">BRIGADA FÉNIX</div><div style="font-size:9px;color:#d4a017;letter-spacing:1px;">UNIDAD OPERATIVA DE BRIGADA HALCÓN</div></div><div style="font-size:10px;color:#666;">Generado: ${new Date().toLocaleDateString('es-DO')}</div></div>`);
   w.document.write(body);w.document.close();setTimeout(()=>w.print(),700);
 }
@@ -1668,7 +1768,7 @@ document.getElementById('asist-mes-sel')?.setAttribute('value', new Date().getMo
 updateNotifDot();
 </script>
 
-<div class="mobile-nav" id="mobile-nav" style="display:none;">
+<div class="mobile-nav" id="mobile-nav" style="display:none!important;">
   <div class="mobile-nav-items">
     <button class="mob-btn active" onclick="goTo('dashboard');setMobActive(this)"><i class="ti ti-layout-dashboard"></i>Panel</button>
     <button class="mob-btn" onclick="goTo('integrantes');setMobActive(this)"><i class="ti ti-users"></i>Integrantes</button>
@@ -1678,7 +1778,7 @@ updateNotifDot();
     <button class="mob-btn" onclick="logout();setMobActive(this)"><i class="ti ti-door-exit"></i>Salir</button>
   </div>
 </div>
-<div class="mobile-nav" id="mobile-nav-member" style="display:none;">
+<div class="mobile-nav" id="mobile-nav-member" style="display:none!important;">
   <div class="mobile-nav-items">
     <button class="mob-btn active" onclick="showMemberHome();setMemberMobActive(this)"><i class="ti ti-layout-dashboard"></i>Inicio</button>
     <button class="mob-btn" onclick="showMemberAvisos();setMemberMobActive(this)"><i class="ti ti-bell"></i>Avisos</button>
@@ -1793,8 +1893,8 @@ showScreen = function(id){
   _origShowScreen(id);
   var nav = document.getElementById('mobile-nav');
   var navMember = document.getElementById('mobile-nav-member');
-  if(nav) { nav.style.cssText = id==='screen-admin' ? 'display:block!important' : 'display:none!important'; }
-  if(navMember) { navMember.style.cssText = id==='screen-member' ? 'display:block!important' : 'display:none!important'; }
+  if(nav) { nav.setAttribute('style', id==='screen-admin' ? 'display:block!important' : 'display:none!important'); }
+  if(navMember) { navMember.setAttribute('style', id==='screen-member' ? 'display:block!important' : 'display:none!important'); }
 };
 
 /* Eliminar integrante de Supabase */
@@ -1950,7 +2050,69 @@ function exportMemberPDF(id){
     .photo{width:80px;height:80px;border-radius:50%;border:2px solid #c9a84c;object-fit:cover;float:right;margin-left:12px;}
     .footer{margin-top:16px;padding-top:8px;border-top:1px solid #eee;font-size:9px;color:#888;text-align:center;}
     @media print{body{padding:10px;} button{display:none!important;}}
-  </style></head><body>
+  </style>
+<style>
+/* ══ RESPONSIVE MOBILE ══ */
+@media (max-width:768px) {
+  /* Ocultar sidebar completamente */
+  .sidenav { display:none !important; width:0 !important; }
+  
+  /* App body en columna */
+  .app-body { flex-direction:column !important; }
+  
+  /* Main content ocupa todo el ancho */
+  .main-content { 
+    width:100% !important; 
+    max-width:100vw !important;
+    padding:0.75rem !important; 
+    padding-bottom:75px !important;
+    overflow-x:hidden !important;
+  }
+  
+  /* Topbar compacto */
+  .topbar { padding:0 0.75rem !important; }
+  .topbar-logo { width:36px !important; height:36px !important; }
+  .topbar-title { font-size:11px !important; letter-spacing:.08em !important; }
+  .topbar-sub { font-size:7px !important; }
+  .user-chip-name { font-size:10px !important; max-width:80px !important; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .user-chip-role { display:none; }
+
+  /* KPIs en 2 columnas */
+  .kpi-grid { grid-template-columns:1fr 1fr !important; gap:0.5rem !important; }
+  
+  /* Cards en 1 columna */  
+  .members-grid { grid-template-columns:1fr !important; gap:0.5rem !important; }
+  
+  /* Formularios en 1 columna */
+  .form-grid { grid-template-columns:1fr !important; }
+  .info-grid { grid-template-columns:1fr !important; }
+  
+  /* Login */
+  .login-box { width:92vw !important; max-width:92vw !important; }
+  .login-title { font-size:1.3rem !important; }
+  
+  /* Modal */
+  .modal-box { width:95vw !important; max-height:85vh !important; overflow-y:auto !important; }
+  
+  /* Expediente */
+  .exp-hero { flex-direction:column !important; align-items:center !important; text-align:center !important; }
+  .exp-photo { width:80px !important; height:80px !important; }
+  .tab-bar { overflow-x:auto !important; -webkit-overflow-scrolling:touch !important; }
+  .tab-btn { white-space:nowrap !important; font-size:11px !important; padding:8px 10px !important; }
+  
+  /* Evitar zoom en inputs iOS */
+  input, select, textarea { font-size:16px !important; }
+  
+  /* Tabla asistencia scrolleable */
+  .main-content > div { max-width:100% !important; overflow-x:auto !important; }
+}
+
+@media (min-width:769px) {
+  .sidenav { display:flex !important; }
+  #mobile-nav, #mobile-nav-member { display:none !important; }
+}
+</style>
+</head><body>
   
   <div class="header">
     ${logoSrc?`<img src="${logoSrc}" class="logo" alt="Logo">`:''}
