@@ -380,6 +380,36 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
   #mobile-nav,#mobile-nav-member { display:none !important; }
 }
 
+
+/* ══ BIRTHDAY CARD ══ */
+#birthday-overlay{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;}
+.bday-card{width:320px;max-width:92vw;background:#08080f;border-radius:4px;overflow:hidden;box-shadow:0 0 0 1px rgba(204,26,26,.3),0 0 60px rgba(10,21,96,.4);}
+.bday-top-band{height:4px;background:linear-gradient(90deg,#cc1a1a 0%,#8b0000 40%,#ffd700 60%,#cc1a1a 100%);}
+.bday-header{background:linear-gradient(160deg,#0d1e80 0%,#0a1560 50%,#0a0814 100%);padding:28px 24px 0;text-align:center;}
+.bday-brigade-label{font-size:7px;letter-spacing:.3em;color:rgba(255,215,0,.5);text-transform:uppercase;font-family:'Courier New',monospace;margin-bottom:20px;}
+.bday-photo-frame{width:88px;height:88px;margin:0 auto;position:relative;}
+.bday-photo-frame::before{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid rgba(255,215,0,.3);}
+.bday-photo-frame::after{content:'';position:absolute;inset:-8px;border-radius:50%;border:1px solid rgba(204,26,26,.2);}
+.bday-photo-circle{width:88px;height:88px;border-radius:50%;overflow:hidden;border:2px solid #ffd700;background:#0a0a14;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;color:#ffd700;}
+.bday-photo-circle img{width:100%;height:100%;object-fit:cover;}
+.bday-name-area{padding:16px 24px 20px;background:linear-gradient(180deg,#0a1560,#0a0814);text-align:center;}
+.bday-occasion{font-size:7px;letter-spacing:.3em;color:#cc1a1a;text-transform:uppercase;font-family:'Courier New',monospace;margin-bottom:8px;}
+.bday-name{font-size:20px;font-weight:900;color:#fff;letter-spacing:.08em;line-height:1.2;text-transform:uppercase;}
+.bday-body{background:#0a0a14;padding:0;}
+.bday-gold-line{height:1px;background:linear-gradient(90deg,transparent,rgba(255,215,0,.4) 30%,rgba(255,215,0,.4) 70%,transparent);margin:0 24px;}
+.bday-message{padding:20px;border-left:2px solid #cc1a1a;margin:18px 24px;background:rgba(10,21,96,.15);}
+.bday-message p{font-size:12px;color:#a0b4d0;line-height:1.9;}
+.bday-message p strong{color:#fff;font-weight:600;}
+.bday-quote{padding:0 24px 18px;text-align:center;}
+.bday-quote-text{font-size:13px;color:#c0d0e8;font-style:italic;line-height:1.7;}
+.bday-quote-text em{color:#ffd700;font-style:normal;font-weight:700;}
+.bday-footer{border-top:1px solid rgba(204,26,26,.2);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;background:#07070e;}
+.bday-footer-logo{width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,215,0,.3);display:flex;align-items:center;justify-content:center;font-size:14px;}
+.bday-footer-name{font-size:9px;color:#cc1a1a;font-weight:800;letter-spacing:.2em;text-transform:uppercase;text-align:right;}
+.bday-footer-sub{font-size:7px;color:#2a3a70;letter-spacing:.15em;text-transform:uppercase;margin-top:2px;text-align:right;}
+.bday-btn{display:block;width:100%;background:linear-gradient(135deg,#cc1a1a,#8b0000);color:#fff;border:none;padding:14px;font-size:10px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;}
+.bday-bottom-band{height:3px;background:linear-gradient(90deg,#ffd700,#cc1a1a,#ffd700);}
+
 </style>
 </head>
 <body>
@@ -1581,7 +1611,7 @@ function loginMember(){
   .then(function(r){return r.json();})
   .then(function(data){
     if(Array.isArray(data)){members=data.map(function(m){return{id:m.id,nombre:m.nombre||'',apodo:m.apodo||'',cedula:m.cedula||'',nacimiento:m.nacimiento||'',sangre:m.sangre||'',ocupacion:m.ocupacion||'',tel1:m.tel1||'',tel2:m.tel2||'',dir:m.dir||'',email:m.email||'',estadoCivil:m.estadoCivil||'',alergias:m.alergias||'',padecimientos:m.padecimientos||'',medicamentos:m.medicamentos||'',rango:m.rango||'Aspirante',estado:m.estado||'Aspirante',ingreso:m.ingreso||'',numbrigada:m.numbrigada||'',razon:m.razon||'',habilidades:m.habilidades||'',cursos:m.cursos?m.cursos.split(',').filter(function(c){return c.trim();}):[], emname:m.emname||'',emrel:m.emrel||'',emtel:m.emtel||'',notas:m.notas||'',foto:m.foto||'',asistencia:m.asistencia||{}};});}
-    if(!tryLogin()){var err=document.getElementById('member-error');if(err)err.style.display='block';}
+    if(!tryLogin()){var err=document.getElementById('member-error');if(err)err.style.display='block';} else { setTimeout(checkBirthdays, 1000); }
   }).catch(function(){var err=document.getElementById('member-error');if(err)err.style.display='block';});
 }
 
@@ -1592,6 +1622,7 @@ window._sbLoad=function(callback){
     if(Array.isArray(data)){members=data.map(function(m){return{id:m.id,nombre:m.nombre||'',apodo:m.apodo||'',cedula:m.cedula||'',nacimiento:m.nacimiento||'',sangre:m.sangre||'',ocupacion:m.ocupacion||'',tel1:m.tel1||'',tel2:m.tel2||'',dir:m.dir||'',email:m.email||'',estadoCivil:m.estadoCivil||'',alergias:m.alergias||'',padecimientos:m.padecimientos||'',medicamentos:m.medicamentos||'',rango:m.rango||'Aspirante',estado:m.estado||'Aspirante',ingreso:m.ingreso||'',numbrigada:m.numbrigada||'',razon:m.razon||'',habilidades:m.habilidades||'',cursos:m.cursos?m.cursos.split(',').filter(function(c){return c.trim();}):[], emname:m.emname||'',emrel:m.emrel||'',emtel:m.emtel||'',notas:m.notas||'',foto:m.foto||'',asistencia:m.asistencia||{}};});localStorage.setItem('bf_members',JSON.stringify(members));}
     if(typeof callback==='function')callback();
     else{var c=document.getElementById('admin-content');if(c&&typeof renderDashboard==='function')renderDashboard(c);}
+    setTimeout(checkBirthdays, 1000);
   }).catch(function(e){console.log('sb:',e);if(typeof callback==='function')callback();});
   fetch(SB_URL+'/avisos?select=*&order=created_at.desc',{headers:SB_HDR})
   .then(function(r){return r.json();})
@@ -1696,6 +1727,66 @@ setInterval(function(){
     }).catch(function(){});
   }
 }, 5000);
+
+function checkBirthdays(){
+  if(!members||members.length===0) return;
+  var today=new Date();
+  var todayMonth=today.getMonth();
+  var todayDay=today.getDate();
+  
+  members.forEach(function(m){
+    if(!m.nacimiento) return;
+    var parts=m.nacimiento.split('-');
+    if(parts.length<3) return;
+    var bMonth=parseInt(parts[1])-1;
+    var bDay=parseInt(parts[2]);
+    
+    if(bMonth===todayMonth && bDay===todayDay){
+      // Check if already shown today
+      var shownKey='bday_shown_'+m.id+'_'+today.getFullYear();
+      if(localStorage.getItem(shownKey)) return;
+      localStorage.setItem(shownKey,'1');
+      showBirthdayCard(m);
+    }
+  });
+}
+
+function showBirthdayCard(m){
+  var existing=document.getElementById('birthday-overlay');
+  if(existing) existing.remove();
+  
+  var initials=(m.nombre||'?').split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase();
+  var photoHtml=m.foto
+    ? '<img src="'+m.foto+'" alt="foto">'
+    : '<span style="font-size:28px;font-weight:900;color:#ffd700;">'+initials+'</span>';
+  
+  var overlay=document.createElement('div');
+  overlay.id='birthday-overlay';
+  overlay.innerHTML=
+    '<div class="bday-card">'+
+    '<div class="bday-top-band"></div>'+
+    '<div class="bday-header">'+
+    '<div class="bday-brigade-label">Brigada Fénix · Unidad Operativa · Brigada Halcón</div>'+
+    '<div class="bday-photo-frame"><div class="bday-photo-circle">'+photoHtml+'</div></div>'+
+    '</div>'+
+    '<div class="bday-name-area">'+
+    '<div class="bday-occasion">Felicitación de cumpleaños</div>'+
+    '<div class="bday-name">'+m.nombre+'</div>'+
+    '</div>'+
+    '<div class="bday-body">'+
+    '<div class="bday-gold-line"></div>'+
+    '<div class="bday-message"><p>Muchas felicidades para <strong>'+m.nombre+'</strong> en su día especial. La Brigada Fénix le desea un año lleno de abundancia y salud de parte de Dios.</p></div>'+
+    '<div class="bday-quote"><div class="bday-quote-text">"Gracias por ser un <em>Fénix</em>.<br>Felicidades en tu día."</div></div>'+
+    '<div class="bday-footer">'+
+    '<div class="bday-footer-logo">🔥</div>'+
+    '<div><div class="bday-footer-name">Brigada Fénix</div><div class="bday-footer-sub">Brigada Halcón · R.D.</div></div>'+
+    '</div>'+
+    '<button class="bday-btn" onclick="document.getElementById(\'birthday-overlay\').remove()">Cerrar · Gracias</button>'+
+    '<div class="bday-bottom-band"></div>'+
+    '</div></div>';
+  
+  document.body.appendChild(overlay);
+}
 </script>
 </body>
 </html>
