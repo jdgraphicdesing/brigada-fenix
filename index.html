@@ -986,41 +986,108 @@ function switchTab(btn, tabId){
 // ASISTENCIA VIEW
 // ════════════════════════════════
 function renderAsistencia(c){
-  const mes=parseInt(document.getElementById('asist-mes-sel')?.value??new Date().getMonth());
-  const anio=parseInt(document.getElementById('asist-anio-sel')?.value??new Date().getFullYear());
+  const hoy=new Date();
+  const mes=parseInt(document.getElementById('asist-mes-sel')?.value??hoy.getMonth());
+  const anio=parseInt(document.getElementById('asist-anio-sel')?.value??hoy.getFullYear());
   const key=anio+'-'+mes;
+  const tipos=[
+    {id:'reunion',label:'Reunión Halcón',color:'#f59e0b'},
+    {id:'servicio',label:'Servicio Brigada',color:'#4488ff'},
+    {id:'actividad',label:'Actividad Especial',color:'#8b5cf6',special:true},
+    {id:'fenix1',label:'Reunión Fénix 1',color:'#cc1a1a'},
+    {id:'fenix2',label:'Reunión Fénix 2',color:'#ef4444'}
+  ];
+  const years=[];for(var y=2024;y<=hoy.getFullYear()+1;y++)years.push(y);
   c.innerHTML=`
   <div class="page-header"><div class="page-title">Asistencia</div></div>
-  <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;">
-    <select id="asist-mes-sel" style="background:#111;border:1px solid var(--b2);border-radius:5px;padding:7px 10px;color:var(--text);font-size:13px;" onchange="renderAsistencia(document.getElementById('admin-content'))">
+  <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center;">
+    <select id="asist-mes-sel" style="background:rgba(0,10,60,.5);border:1px solid rgba(18,48,200,.3);border-radius:4px;padding:7px 10px;color:#c0d0e8;font-size:13px;" onchange="renderAsistencia(document.getElementById('admin-content'))">
       ${MESES_FULL.map((m,i)=>`<option value="${i}" ${i===mes?'selected':''}>${m}</option>`).join('')}
     </select>
-    <select id="asist-anio-sel" style="background:#111;border:1px solid var(--b2);border-radius:5px;padding:7px 10px;color:var(--text);font-size:13px;" onchange="renderAsistencia(document.getElementById('admin-content'))">
-      <option value="2025" ${anio===2025?'selected':''}>2025</option>
-      <option value="2026" ${anio===2026?'selected':''}>2026</option>
-      <option value="2027" ${anio===2027?'selected':''}>2027</option>
+    <select id="asist-anio-sel" style="background:rgba(0,10,60,.5);border:1px solid rgba(18,48,200,.3);border-radius:4px;padding:7px 10px;color:#c0d0e8;font-size:13px;" onchange="renderAsistencia(document.getElementById('admin-content'))">
+      ${years.map(y=>`<option value="${y}" ${y===anio?'selected':''}>${y}</option>`).join('')}
     </select>
   </div>
-  <div class="asist-table">
-    <div class="asist-hdr"><div>Integrante</div><div style="text-align:center;">Reunión</div><div style="text-align:center;">Servicio</div></div>
-    ${members.map(m=>{
-      const d=(m.asistencia||{})[key]||{reunion:null,servicio:null};
-      const ri=d.reunion===true?'<i class="ti ti-check" style="color:var(--green3);font-size:16px;"></i>':d.reunion===false?'<i class="ti ti-x" style="color:var(--red3);font-size:16px;"></i>':'<span style="color:var(--text3);">—</span>';
-      const si=d.servicio===true?'<i class="ti ti-check" style="color:var(--green3);font-size:16px;"></i>':d.servicio===false?'<i class="ti ti-x" style="color:var(--red3);font-size:16px;"></i>':'<span style="color:var(--text3);">—</span>';
-      return`<div class="asist-row-item" onclick="openExpediente(${m.id})">
-        <div style="display:flex;align-items:center;gap:10px;">${photoEl(m,28,10)}
-          <div><div style="font-size:13px;font-weight:700;">${m.nombre}</div><div style="font-size:10px;color:var(--text2);">${m.rango}</div></div>
-        </div>
-        <div style="text-align:center;">${ri}</div>
-        <div style="text-align:center;">${si}</div>
-      </div>`;
-    }).join('')}
+  <div style="overflow-x:auto;">
+  <table style="width:100%;border-collapse:collapse;min-width:700px;">
+    <thead>
+      <tr style="background:rgba(10,20,90,.8);border-bottom:1px solid rgba(18,48,200,.3);">
+        <th style="text-align:left;padding:10px 12px;font-size:11px;color:#4488ff;font-weight:700;text-transform:uppercase;letter-spacing:.08em;min-width:180px;">Integrante</th>
+        ${tipos.map(t=>`<th style="text-align:center;padding:10px 8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:${t.color};">${t.label}</th>`).join('')}
+        <th style="text-align:left;padding:10px 12px;font-size:11px;color:#4488ff;font-weight:700;text-transform:uppercase;letter-spacing:.08em;">Justificación</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${members.map(m=>{
+        const d=(m.asistencia||{})[key]||{};
+        return`<tr style="border-bottom:1px solid rgba(18,48,200,.1);" onmouseover="this.style.background='rgba(10,20,90,.3)'" onmouseout="this.style.background='transparent'">
+          <td style="padding:10px 12px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              ${photoEl(m,30,10)}
+              <div>
+                <div style="font-size:13px;font-weight:600;color:#c0d0e8;">${m.nombre}</div>
+                <div style="font-size:10px;color:#3a5080;">${m.rango}</div>
+              </div>
+            </div>
+          </td>
+          ${tipos.map(t=>{
+            const v=d[t.id];
+            if(t.special){
+              const opciones=['','Apoyo a otra brigada','Capacitación','Apoyo logística ext.','Apoyo día especial','Otros'];
+              const selVal=typeof v==='string'?v:'';
+              return`<td style="text-align:center;padding:8px;">
+                <select onchange="markActividadEspecial(${m.id},'${key}',this.value)"
+                  style="background:${selVal?'rgba(139,92,246,.2)':'rgba(0,10,60,.5)'};color:${selVal?'#a78bfa':'#3a5080'};border:1px solid ${selVal?'#8b5cf6':'rgba(18,48,200,.3)'};border-radius:4px;padding:4px 6px;font-size:10px;cursor:pointer;max-width:130px;">
+                  ${opciones.map(o=>`<option value="${o}" ${selVal===o?'selected':''}>${o||'— Sin marcar —'}</option>`).join('')}
+                </select>
+              </td>`;
+            }
+            return`<td style="text-align:center;padding:10px 8px;">
+              <button onclick="markAsistencia(${m.id},'${t.id}',true,'${key}')" style="background:${v===true?t.color:'rgba(0,10,60,.5)'};color:${v===true?'#fff':'#3a5080'};border:1px solid ${v===true?t.color:'rgba(18,48,200,.3)'};border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;font-weight:600;margin:1px;">✓</button>
+              <button onclick="markAsistencia(${m.id},'${t.id}',false,'${key}')" style="background:${v===false?'#cc1a1a':'rgba(0,10,60,.5)'};color:${v===false?'#fff':'#3a5080'};border:1px solid ${v===false?'#cc1a1a':'rgba(18,48,200,.3)'};border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;font-weight:600;margin:1px;">✗</button>
+            </td>`;
+          }).join('')}
+          <td style="padding:8px 12px;">
+            <input type="text" value="${(d.justificacion||'')}" placeholder="Justificación..."
+              onchange="saveJustificacion(${m.id},'${key}',this.value)"
+              style="background:rgba(0,10,60,.5);border:1px solid rgba(18,48,200,.3);border-radius:4px;padding:5px 8px;color:#c0d0e8;font-size:12px;width:100%;min-width:120px;">
+          </td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table>
   </div>`;
 }
 
-// ════════════════════════════════
-// CURSOS
-// ════════════════════════════════
+function markAsistencia(id,tipo,valor,key){
+  const m=members.find(i=>i.id===id);if(!m)return;
+  if(!m.asistencia)m.asistencia={};
+  if(!m.asistencia[key])m.asistencia[key]={};
+  m.asistencia[key][tipo]=m.asistencia[key][tipo]===valor?null:valor;
+  saveLS('bf_members',members);
+  window._sbSave(m,false);
+  renderAsistencia(document.getElementById('admin-content'));
+}
+
+function markActividadEspecial(id,key,valor){
+  const m=members.find(i=>i.id===id);if(!m)return;
+  if(!m.asistencia)m.asistencia={};
+  if(!m.asistencia[key])m.asistencia[key]={};
+  m.asistencia[key].actividad=valor||null;
+  saveLS('bf_members',members);
+  window._sbSave(m,false);
+}
+
+function saveJustificacion(id,key,texto){
+  const m=members.find(i=>i.id===id);if(!m)return;
+  if(!m.asistencia)m.asistencia={};
+  if(!m.asistencia[key])m.asistencia[key]={};
+  m.asistencia[key].justificacion=texto;
+  saveLS('bf_members',members);
+  window._sbSave(m,false);
+}
+
+
 function renderCursos(c){
   const all={};
   members.forEach(m=>getCursos(m).forEach(cv=>{if(!all[cv])all[cv]=[];all[cv].push(m);}));
@@ -1579,6 +1646,49 @@ function playNotifSound(){
 
 
 
+
+/* AUTO-REFRESH cada 15 segundos */
+setInterval(function(){
+  if(typeof currentMode === 'undefined') return;
+  if(currentMode === 'admin' || currentMode === 'member'){
+    fetch(SB_URL+'/integrantes?select=*&order=id',{headers:SB_HDR})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(!Array.isArray(data)||data.length===0) return;
+      members=data.map(function(m){
+        return{id:m.id,nombre:m.nombre||'',apodo:m.apodo||'',cedula:m.cedula||'',
+        nacimiento:m.nacimiento||'',sangre:m.sangre||'',ocupacion:m.ocupacion||'',
+        tel1:m.tel1||'',tel2:m.tel2||'',dir:m.dir||'',email:m.email||'',
+        estadoCivil:m.estadoCivil||'',alergias:m.alergias||'',
+        padecimientos:m.padecimientos||'',medicamentos:m.medicamentos||'',
+        rango:m.rango||'Aspirante',estado:m.estado||'Aspirante',ingreso:m.ingreso||'',
+        numbrigada:m.numbrigada||'',razon:m.razon||'',habilidades:m.habilidades||'',
+        cursos:m.cursos?m.cursos.split(',').filter(function(c){return c.trim();}):[], 
+        emname:m.emname||'',emrel:m.emrel||'',emtel:m.emtel||'',
+        notas:m.notas||'',foto:m.foto||'',asistencia:m.asistencia||{}};
+      });
+      localStorage.setItem('bf_members',JSON.stringify(members));
+    }).catch(function(){});
+    fetch(SB_URL+'/avisos?select=*&order=created_at.desc',{headers:SB_HDR})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(!Array.isArray(data)) return;
+      var prevCount = notifs.length;
+      notifs=data.map(function(n){
+        return{id:n.id,titulo:n.titulo||'',msg:n.mensaje||'',
+        tipo:n.tipo||'info',leido:false,
+        fecha:new Date(n.created_at).toLocaleDateString('es-DO')};
+      });
+      localStorage.setItem('bf_notifs',JSON.stringify(notifs));
+      if(typeof updateNotifDot==='function') updateNotifDot();
+      // Notify member if new avisos appeared
+      if(currentMode==='member' && notifs.length > prevCount){
+        playNotifSound();
+        if(typeof updateNotifDot==='function') updateNotifDot();
+      }
+    }).catch(function(){});
+  }
+}, 5000);
 </script>
 </body>
 </html>
