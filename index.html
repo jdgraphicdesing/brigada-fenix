@@ -1793,6 +1793,9 @@ function showBirthdayCard(m){
 }
 
 function renderCursosLinks(c){
+  loadCursosLinks(function(){ _renderCursosLinks(c); });
+}
+function _renderCursosLinks(c){
   const links = JSON.parse(localStorage.getItem('bf_cursos_links')||'[]');
   const isAdmin = currentMode==='admin';
   c.innerHTML=`
@@ -1812,7 +1815,7 @@ function renderCursosLinks(c){
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0;">
         <a href="${l.url}" target="_blank" style="background:linear-gradient(135deg,#1230c8,#0a1560);color:#fff;border:none;border-radius:4px;padding:7px 14px;font-size:11px;font-weight:700;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:5px;"><i class="ti ti-external-link"></i> Abrir</a>
-        ${isAdmin?`<button onclick="deleteCursoLink(${i})" style="background:rgba(204,26,26,.15);color:#cc1a1a;border:1px solid rgba(204,26,26,.3);border-radius:4px;padding:7px 10px;font-size:11px;cursor:pointer;"><i class="ti ti-trash"></i></button>`:''}
+        ${isAdmin?`<button onclick="deleteCursoLink(${l.id})" style="background:rgba(204,26,26,.15);color:#cc1a1a;border:1px solid rgba(204,26,26,.3);border-radius:4px;padding:7px 10px;font-size:11px;cursor:pointer;"><i class="ti ti-trash"></i></button>`:''}
       </div>
     </div>
   `).join('')}
@@ -1853,20 +1856,27 @@ function saveCursoLink(){
   var url=document.getElementById('cl-url').value.trim();
   if(!nombre||!url){showToast('Completa el nombre y el link',true);return;}
   if(!url.startsWith('http')){url='https://'+url;}
-  var links=JSON.parse(localStorage.getItem('bf_cursos_links')||'[]');
-  links.push({nombre:nombre,descripcion:desc,url:url});
-  localStorage.setItem('bf_cursos_links',JSON.stringify(links));
-  document.getElementById('curso-link-modal').remove();
-  showToast('Curso agregado');
-  renderCursosLinks(document.getElementById('admin-content'));
+  fetch(SB_URL+'/cursos_links',{method:'POST',headers:Object.assign({},SB_HDR,{'Prefer':'return=representation'}),body:JSON.stringify({nombre:nombre,descripcion:desc,url:url})})
+  .then(function(r){return r.json();})
+  .then(function(){
+    loadCursosLinks(function(){
+      document.getElementById('curso-link-modal').remove();
+      showToast('Curso agregado');
+      renderCursosLinks(document.getElementById('admin-content'));
+    });
+  }).catch(function(){
+    showToast('Error al guardar',true);
+  });
 }
 
-function deleteCursoLink(idx){
-  var links=JSON.parse(localStorage.getItem('bf_cursos_links')||'[]');
-  links.splice(idx,1);
-  localStorage.setItem('bf_cursos_links',JSON.stringify(links));
-  showToast('Curso eliminado');
-  renderCursosLinks(document.getElementById('admin-content'));
+function deleteCursoLink(id){
+  fetch(SB_URL+'/cursos_links?id=eq.'+id,{method:'DELETE',headers:SB_HDR})
+  .then(function(){
+    loadCursosLinks(function(){
+      showToast('Curso eliminado');
+      renderCursosLinks(document.getElementById('admin-content'));
+    });
+  }).catch(function(){showToast('Error al eliminar',true);});
 }
 
 function showMemberCursos(){
@@ -1885,6 +1895,17 @@ function showMemberCursos(){
           +'</div>';
       }).join(''))
     +'</div>';
+}
+
+function loadCursosLinks(callback){
+  fetch(SB_URL+'/cursos_links?select=*&order=id',{headers:SB_HDR})
+  .then(function(r){return r.json();})
+  .then(function(data){
+    if(Array.isArray(data)){
+      localStorage.setItem('bf_cursos_links',JSON.stringify(data));
+    }
+    if(typeof callback==='function') callback();
+  }).catch(function(){if(typeof callback==='function') callback();});
 }
 </script>
 </body>
