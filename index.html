@@ -1633,6 +1633,9 @@ window._sbLoad=function(callback){
   .then(function(data){
     if(Array.isArray(data)){notifs=data.map(function(n){return{id:n.id,titulo:n.titulo||'',msg:n.mensaje||'',tipo:n.tipo||'info',leido:false,fecha:new Date(n.created_at).toLocaleDateString('es-DO')};});localStorage.setItem('bf_notifs',JSON.stringify(notifs));if(typeof updateNotifDot==='function')updateNotifDot();}
   }).catch(function(e){console.log('sb avisos:',e);});
+  fetch(SB_URL+'/cursos_links?select=*&order=id',{headers:SB_HDR}).then(function(r){return r.json();}).then(function(data){if(Array.isArray(data))localStorage.setItem('bf_cursos_links',JSON.stringify(data));}).catch(function(){});
+
+  fetch(SB_URL+'/cursos_links?select=*&order=id',{headers:SB_HDR}).then(function(r){return r.json();}).then(function(data){if(Array.isArray(data))localStorage.setItem('bf_cursos_links',JSON.stringify(data));}).catch(function(){});
 };
 
 window._sbSave=function(m,isNew){
@@ -1880,6 +1883,10 @@ function deleteCursoLink(id){
 }
 
 function showMemberCursos(){
+  var mc=document.getElementById('member-content');if(!mc)return;
+  loadCursosLinks(function(){_showMemberCursos();});
+}
+function _showMemberCursos(){
   var mc=document.getElementById('member-content');if(!mc)return;
   var links=JSON.parse(localStorage.getItem('bf_cursos_links')||'[]');
   mc.innerHTML='<div style="padding-bottom:2rem;">'
