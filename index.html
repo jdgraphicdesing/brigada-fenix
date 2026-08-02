@@ -315,7 +315,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 .notif-btn,.logout-btn { background:rgba(10,20,90,.5) !important; border:1px solid rgba(18,48,200,.3) !important; color:#4488ff !important; }
 .sidenav { background:linear-gradient(180deg,#0d1e80 0%,#0a1560 50%,#0a0a14 100%) !important; border-right:1px solid rgba(18,48,200,.3) !important; }
 .nav-section-label { color:#2a3a80 !important; letter-spacing:.15em !important; font-weight:700 !important; }
-.nav-item { color:#3a5080 !important; letter-spacing:.04em !important; }
+.nav-item { color:#ffffff !important; letter-spacing:.04em !important; }
 .nav-item:hover { color:#fff !important; background:rgba(204,26,26,.1) !important; }
 .nav-item.active { color:#fff !important; border-left-color:#cc1a1a !important; background:rgba(204,26,26,.15) !important; font-weight:700 !important; }
 .nav-sep { background:rgba(18,48,200,.2) !important; }
@@ -346,7 +346,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 #mobile-nav { background:linear-gradient(90deg,#0a1560,#0d1e80) !important; border-top:2px solid #cc1a1a !important; }
 #mobile-nav-member { background:linear-gradient(90deg,#0a1560,#0d1e80) !important; border-top:2px solid #cc1a1a !important; }
 .mobile-nav-items { display:flex; justify-content:space-around; align-items:center; }
-.mob-btn { display:flex; flex-direction:column; align-items:center; gap:3px; background:none; border:none; color:#3a5080 !important; font-size:8px; text-transform:uppercase; letter-spacing:.5px; cursor:pointer; padding:4px 6px; }
+.mob-btn { display:flex; flex-direction:column; align-items:center; gap:3px; background:none; border:none; color:#ffffff !important; font-size:8px; text-transform:uppercase; letter-spacing:.5px; cursor:pointer; padding:4px 6px; }
 .mob-btn i { font-size:20px; }
 .mob-btn.active { color:#cc1a1a !important; }
 .mob-btn:hover { color:#fff !important; }
@@ -1470,6 +1470,7 @@ updateNotifDot();
 <div class="mobile-nav" id="mobile-nav-member" style="display:none!important;">
   <div class="mobile-nav-items">
     <button class="mob-btn active" onclick="showMemberHome();setMemberMobActive(this)"><i class="ti ti-layout-dashboard"></i>Inicio</button>
+    <button class="mob-btn" onclick="showMemberCursos();setMemberMobActive(this)"><i class="ti ti-book"></i>Cursos</button>
     <button class="mob-btn" onclick="showMemberAvisos();setMemberMobActive(this)"><i class="ti ti-bell"></i>Avisos</button>
     <button class="mob-btn" onclick="logoutMember();setMemberMobActive(this)"><i class="ti ti-door-exit"></i>Salir</button>
   </div>
@@ -1866,6 +1867,24 @@ function deleteCursoLink(idx){
   localStorage.setItem('bf_cursos_links',JSON.stringify(links));
   showToast('Curso eliminado');
   renderCursosLinks(document.getElementById('admin-content'));
+}
+
+function showMemberCursos(){
+  var mc=document.getElementById('member-content');if(!mc)return;
+  var links=JSON.parse(localStorage.getItem('bf_cursos_links')||'[]');
+  mc.innerHTML='<div style="padding-bottom:2rem;">'
+    +'<div style="margin-bottom:1rem;"><button onclick="showMemberHome()" style="background:rgba(10,20,90,.5);border:1px solid rgba(18,48,200,.3);color:#4488ff;cursor:pointer;font-size:13px;padding:6px 12px;border-radius:4px;"><i class=\'ti ti-arrow-left\'></i> Volver</button></div>'
+    +'<div style="font-size:1.2rem;font-weight:800;color:#fff;letter-spacing:.1em;margin-bottom:1rem;border-left:3px solid #4488ff;padding-left:.75rem;">CURSOS DISPONIBLES</div>'
+    +(links.length===0
+      ?'<div style="text-align:center;color:#3a5080;padding:2rem;">No hay cursos disponibles aún</div>'
+      :links.map(function(l){
+        return '<div style="background:linear-gradient(135deg,rgba(10,20,90,.6),rgba(10,10,20,.8));border:1px solid rgba(18,48,200,.2);border-left:3px solid #4488ff;border-radius:6px;padding:1rem;margin-bottom:.75rem;">'
+          +'<div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;">'+l.nombre+'</div>'
+          +(l.descripcion?'<div style="font-size:12px;color:#4a6080;margin-bottom:8px;">'+l.descripcion+'</div>':'')
+          +'<a href="'+l.url+'" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#1230c8,#0a1560);color:#fff;border:none;border-radius:4px;padding:8px 16px;font-size:11px;font-weight:700;text-decoration:none;letter-spacing:.08em;"><i class=\'ti ti-external-link\'></i> ABRIR CURSO</a>'
+          +'</div>';
+      }).join(''))
+    +'</div>';
 }
 </script>
 </body>
