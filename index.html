@@ -1587,6 +1587,84 @@ var SB_URL='https://iacgklyzlzkaoflwqegg.supabase.co/rest/v1';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhY2drbHl6bHprYW9mbHdxZWdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MjQ3MjQsImV4cCI6MjA5ODAwMDcyNH0.6V_I0fzN7OC_Z9_fnfbKUNewYa5YJ9zNjA6RsuvR2Jk';
 var SB_HDR={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'};
 
+/* SUPABASE REALTIME - actualizacion instantanea sin polling */
+(function setupRealtime(){
+  try {
+    var wsUrl = 'wss://iacgklyzlzkaoflwqegg.supabase.co/realtime/v1/websocket?apikey=' + SB_KEY + '&vsn=1.0.0';
+    var ws;
+    var heartbeat;
+    
+    function connect(){
+      ws = new WebSocket(wsUrl);
+      
+      ws.onopen = function(){
+        // Subscribe to integrantes table
+        ws.send(JSON.stringify({
+          topic: 'realtime:public:integrantes',
+          event: 'phx_join',
+          payload: {},
+          ref: '1'
+        }));
+        // Subscribe to avisos table
+        ws.send(JSON.stringify({
+          topic: 'realtime:public:avisos',
+          event: 'phx_join',
+          payload: {},
+          ref: '2'
+        }));
+        // Heartbeat cada 30 segundos
+        heartbeat = setInterval(function(){
+          if(ws.readyState === 1){
+            ws.send(JSON.stringify({topic:'phoenix',event:'heartbeat',payload:{},ref:'hb'}));
+          }
+        }, 30000);
+      };
+      
+      ws.onmessage = function(e){
+        try {
+          var msg = JSON.parse(e.data);
+          if(msg.event === 'INSERT' || msg.event === 'UPDATE' || msg.event === 'DELETE'){
+            // Data changed - refresh
+            if(typeof currentMode !== 'undefined' && (currentMode === 'admin' || currentMode === 'member')){
+              fetch(SB_URL+'/integrantes?select=*&order=id',{headers:SB_HDR})
+                .then(function(r){return r.json();})
+                .then(function(data){
+                  if(!Array.isArray(data)||data.length===0) return;
+                  members=data.map(function(m){
+                    return{id:m.id,nombre:m.nombre||'',apodo:m.apodo||'',cedula:m.cedula||'',
+                    nacimiento:m.nacimiento||'',sangre:m.sangre||'',ocupacion:m.ocupacion||'',
+                    tel1:m.tel1||'',tel2:m.tel2||'',dir:m.dir||'',email:m.email||'',
+                    estadoCivil:m.estadoCivil||'',alergias:m.alergias||'',
+                    padecimientos:m.padecimientos||'',medicamentos:m.medicamentos||'',
+                    rango:m.rango||'Aspirante',estado:m.estado||'Aspirante',ingreso:m.ingreso||'',
+                    numbrigada:m.numbrigada||'',razon:m.razon||'',habilidades:m.habilidades||'',
+                    cursos:m.cursos?m.cursos.split(',').filter(function(c){return c.trim();}):[], 
+                    emname:m.emname||'',emrel:m.emrel||'',emtel:m.emtel||'',
+                    notas:m.notas||'',foto:m.foto||'',asistencia:m.asistencia||{}};
+                  });
+                  localStorage.setItem('bf_members',JSON.stringify(members));
+                  if(typeof renderAdmin === 'function' && currentMode === 'admin') renderAdmin();
+                  if(typeof renderMemberView === 'function' && currentMode === 'member') renderMemberView();
+                }).catch(function(){});
+            }
+          }
+        } catch(err){}
+      };
+      
+      ws.onclose = function(){
+        clearInterval(heartbeat);
+        // Reconnect after 10 seconds
+        setTimeout(connect, 10000);
+      };
+      
+      ws.onerror = function(){ ws.close(); };
+    }
+    
+    connect();
+  } catch(e){ console.log('Realtime no disponible:', e); }
+})();
+
+
 /* LOGIN ADMIN */
 function loginAdmin(){
   const p=document.getElementById('admin-pass').value;
@@ -1692,7 +1770,7 @@ function playNotifSound(){
 
 
 
-/* AUTO-REFRESH cada 15 segundos */
+/* AUTO-REFRESH cada 5 minutos (reducido para conservar cuota) */
 setInterval(function(){
   if(typeof currentMode === 'undefined') return;
   if(currentMode === 'admin' || currentMode === 'member'){
@@ -1733,7 +1811,7 @@ setInterval(function(){
       }
     }).catch(function(){});
   }
-}, 5000);
+}, 300000);
 
 function checkBirthdays(){
   if(!members||members.length===0) return;
